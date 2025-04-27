@@ -2,6 +2,8 @@ import { Typography } from '@mui/material'
 import { Routes, Route } from 'react-router'
 import MainLayout from './layouts/MainLayout'
 import { SearchForAccess } from './pages/SearchForAccess'
+import { UserAccessHistory } from './pages/UserAccessHistory'
+import { RequestAccess } from './pages/RequestAccess'
 function App() {
 
   return (
@@ -15,11 +17,11 @@ function App() {
           </Route>
           {/* User Access History Routes */}
           <Route path="userAccessHistory">
-            <Route index element={<div>User Access History</div>} />
+            <Route index element={<UserAccessHistory />} />
           </Route>
           {/* Request Access Routes */}
           <Route path="requestAccess">
-            <Route index element={<div>Request Access</div>} />
+            <Route index element={<RequestAccess />} />
           </Route>
 
           {/* 404 Not Found */}

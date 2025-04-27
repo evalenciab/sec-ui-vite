@@ -1,14 +1,16 @@
 import { Box, Typography, TextField, Autocomplete, Select, MenuItem, FormControl, InputLabel, Button, Grid } from "@mui/material"
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { ISearchFormInput, IUserOption, IApplicationOption, IAccessTypeOption } from "../types/search";
+import { IAccessTypeOption, ISearchFormInput } from "../types/search";
+import { IApplicationOption } from "../types/search";
+import { IUserOption } from "../types/search";
 
 const rows: GridRowsProp = [
-    { id: 1, appName: 'Awesome App', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Admin' },
-    { id: 2, appName: 'Awesome App 2', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Gerenal' },
-    { id: 3, appName: 'Awesome App 3', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Business Owner' },
-    { id: 4, appName: 'Awesome App 4', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Admin' },
-    { id: 5, appName: 'Awesome App 5', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Admin' },
+    { id: 1, appName: 'Awesome App', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Admin', lastAccessDate: '2021-01-01', certifiedDate: '2021-01-01', status: 'Active' },
+    { id: 2, appName: 'Awesome App 2', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Gerenal', lastAccessDate: '2021-01-01', certifiedDate: '2021-01-01', status: 'Active' },
+    { id: 3, appName: 'Awesome App 3', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Business Owner', lastAccessDate: '2021-01-01', certifiedDate: '2021-01-01', status: 'Active' },
+    { id: 4, appName: 'Awesome App 4', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Admin', lastAccessDate: '2021-01-01', certifiedDate: '2021-01-01', status: 'Active' },
+    { id: 5, appName: 'Awesome App 5', userId: 'EVALENCIA', userName: 'Valencia, Elias', email: 'elias@valencia.com', accessType: 'Admin', lastAccessDate: '2021-01-01', certifiedDate: '2021-01-01', status: 'Active' },
 ];
 
 const columns: GridColDef[] = [
@@ -17,11 +19,12 @@ const columns: GridColDef[] = [
     { field: 'userId', headerName: 'User ID', width: 100 },
     { field: 'userName', headerName: 'User Name', width: 200 },
     { field: 'email', headerName: 'Email', width: 200 },
+    { field: 'lastAccessDate', headerName: 'Last Access Date', width: 200 },
+    { field: 'certifiedDate', headerName: 'Certified Date', width: 200 },
+    { field: 'status', headerName: 'Status', width: 200 },
 
 
 ];
-
-// Mock data for Autocomplete/Select options - replace with actual data fetching later
 const userOptions: IUserOption[] = [
     { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' },
     { id: 'JDOE', label: 'John Doe (JDOE)' },
@@ -40,8 +43,7 @@ const accessTypeOptions: IAccessTypeOption[] = [
     { id: 'GENERAL', label: 'General' },
     { id: 'BUSINESS_OWNER', label: 'Business Owner' },
 ];
-
-export const SearchForAccess = () => {
+export const UserAccessHistory = () => {
     const { handleSubmit, control, formState: { errors } } = useForm<ISearchFormInput>({
         defaultValues: {
             user: null,
@@ -54,7 +56,6 @@ export const SearchForAccess = () => {
         console.log(data);
         // TODO: Implement search logic based on form data
     };
-
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h6">Filters</Typography>
@@ -148,8 +149,7 @@ export const SearchForAccess = () => {
                 </Grid>
             </Box>
             <Typography variant="h6">Results</Typography>
-            <DataGrid rows={rows} columns={columns} autoHeight /> {/* Added autoHeight for better layout */}
+            <DataGrid rows={rows} columns={columns} />
         </Box>
     )
 }
-
