@@ -18,7 +18,10 @@ export const maintainAppsSchema = z
       code: z.string(),
       name: z.string(),
       description: z.string(),
-      accessType: z.string(),
+      accessType: z.object({
+        id: z.string(),
+        label: z.string(),
+      }),
     })).optional().default([]),
   })
   .refine(

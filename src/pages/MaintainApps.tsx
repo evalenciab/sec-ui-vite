@@ -3,9 +3,14 @@ import {
 	Box,
 	Button,
 	Checkbox,
+	FormControl,
 	FormControlLabel,
 	FormGroup,
+	FormLabel,
 	Grid,
+	IconButton,
+	Radio,
+	RadioGroup,
 	TextField,
 	Typography,
 } from "@mui/material";
@@ -15,20 +20,29 @@ import {
 	maintainAppsSchema,
 } from "../schemas/maintain_apps";
 import { z } from "zod";
-import { IUserOption } from "../types/search";
+import { IAccessTypeOption, IUserOption } from "../types/search";
 import { Autocomplete } from "@mui/material";
+import { AddCircle, Delete } from "@mui/icons-material";
 const userOptions: IUserOption[] = [
 	{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' },
 	{ id: 'JDOE', label: 'John Doe (JDOE)' },
 	{ id: 'ASMITH', label: 'Alice Smith (ASMITH)' },
 ];
-
+const accessTypeMap = {
+	EMPLOYEE: { code: 'EMPLOYEE', label: 'Employee' },
+	CUSTOMER: { code: 'CUSTOMER', label: 'Customer' },
+};
+const accessTypeOptions: IAccessTypeOption[] = [
+	{ id: accessTypeMap.EMPLOYEE.code, label: accessTypeMap.EMPLOYEE.label },
+	{ id: accessTypeMap.CUSTOMER.code, label: accessTypeMap.CUSTOMER.label },
+];
 export function MaintainApps() {
 	const {
 		control,
 		handleSubmit,
 		register,
 		watch,
+		setValue,
 		formState: { errors },
 	} = useForm<z.input<typeof maintainAppsSchema>>({
 		resolver: zodResolver(maintainAppsSchema),
@@ -50,6 +64,14 @@ export function MaintainApps() {
 	const onSubmit = (data: z.input<typeof maintainAppsSchema>) => {
 		console.log(data);
 		// Handle form submission logic here (e.g., API call)
+	};
+
+	const handleAddRole = () => {
+		setValue("roles", [...watchRoles ?? [], { code: "", name: "", description: "", accessType: accessTypeOptions[0] }]);
+	};
+
+	const handleRemoveRole = (index: number) => {
+		setValue("roles", watchRoles?.filter((_, i) => i !== index));
 	};
 
 	return (
@@ -175,21 +197,74 @@ export function MaintainApps() {
 			</Grid>
 			<Grid size={{ xs: 12, md: 6 }}>
 				<Grid container spacing={2}>
-					<Grid size={{ xs: 12, md: 6 }}>
+					<Grid size={{ xs: 10 }} sx={{display: "flex", justifyContent: "space-between"}}>
 						<Typography variant="h6" component="h2" gutterBottom>Roles</Typography>
-					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
-						<Button variant="contained" color="primary">Add Role</Button>
+						
+						<IconButton color="primary" onClick={handleAddRole}>
+							<AddCircle />
+						</IconButton>
 					</Grid>
 				</Grid>
-				<Grid container spacing={2}>
-					<Grid size={{ xs: 12, md: 6 }}>
+				<Grid container spacing={2} sx={{maxHeight: "500px", overflow: "auto"}}>
+					<Grid size={{ xs: 10 }}>
 						{
-							watchRoles?.map((role) => (
-								<Grid key={role.code} size={{ xs: 12, md: 6 }}>
-									<Typography variant="h6" component="h3" gutterBottom>{role.name}</Typography>
-									<Typography variant="body1" component="p" gutterBottom>{role.description}</Typography>
-									
+							watchRoles?.map((role, index) => (
+								<Grid key={`role-${index}`} size={{ xs: 12 }} sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
+									<TextField
+										label="Code"
+										{...register(`roles.${index}.code`)}
+										error={!!errors.roles?.[index]?.code}
+										helperText={errors.roles?.[index]?.code?.message}
+										fullWidth
+										size="small"
+									/>
+									<TextField
+										label="Name"
+										{...register(`roles.${index}.name`)}
+										error={!!errors.roles?.[index]?.name}
+										helperText={errors.roles?.[index]?.name?.message}
+										fullWidth
+										size="small"
+									/>
+									<TextField
+										label="Description"
+										{...register(`roles.${index}.description`)}
+										error={!!errors.roles?.[index]?.description}
+										helperText={errors.roles?.[index]?.description?.message}
+										fullWidth
+										rows={2}
+										multiline
+										size="small"
+									/>
+									<FormControl>
+										<FormLabel>Access Type</FormLabel>
+										<RadioGroup
+											{...register(`roles.${index}.accessType`)}
+											row
+											onChange={(e) => {
+												const newAccessType = e.target.value;
+												const newAccessTypeOption = accessTypeOptions.find((option) => option.id === newAccessType);
+												if (newAccessTypeOption) {
+													setValue(`roles.${index}.accessType`, newAccessTypeOption);
+												}
+											}}
+										>
+											{accessTypeOptions.map((option) => (
+												<FormControlLabel key={option.id} value={option.id} control={<Radio />} label={option.label} />
+											))}
+										</RadioGroup>
+									</FormControl>
+									<Button 
+										color="error" 
+										onClick={() => handleRemoveRole(index)} 
+										sx={{width: "fit-content", alignSelf: "flex-end"}} 
+										size="small" 
+										variant="outlined"
+										startIcon={<Delete />}
+										
+									>
+										Remove
+									</Button>
 								</Grid>
 							))
 						}
