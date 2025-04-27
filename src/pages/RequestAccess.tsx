@@ -1,5 +1,5 @@
-import { Autocomplete, Box, TextField, Grid, Typography, MenuItem, Select, InputLabel, FormControl, Stack } from "@mui/material";
-import { IApplicationOption, IAccessTypeOption, ISearchFormInput, IUserOption } from "../types/search";
+import { Autocomplete, Box, TextField, Grid, Typography, MenuItem, Select, InputLabel, FormControl, Stack, Button } from "@mui/material";
+import { IApplicationOption, IAccessTypeOption, ISearchFormInput, IUserOption, IRequestAccessFormInput } from "../types/search";
 import { Controller, useForm } from "react-hook-form";
 import { SubmitHandler } from "react-hook-form";
 // Mock data for Autocomplete/Select options - replace with actual data fetching later
@@ -23,15 +23,16 @@ const accessTypeOptions: IAccessTypeOption[] = [
 ];
 
 export const RequestAccess = () => {
-    const { handleSubmit, control, formState: { errors } } = useForm<ISearchFormInput>({
+    const { handleSubmit, control, formState: { errors } } = useForm<IRequestAccessFormInput>({
         defaultValues: {
             user: null,
             application: '',
             accessType: '',
+			comment: '',
         }
     });
 
-    const onSubmit: SubmitHandler<ISearchFormInput> = (data) => {
+    const onSubmit: SubmitHandler<IRequestAccessFormInput> = (data) => {
         console.log(data);
         // TODO: Implement search logic based on form data
     };
@@ -72,83 +73,69 @@ export const RequestAccess = () => {
                         </Grid>
                     </Grid>
                     <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                        <Controller
-                            name="application"
-                            control={control}
-                            render={({ field }) => (
-                                <FormControl fullWidth error={!!errors.application}>
-                                    <InputLabel id="application-select-label">Application</InputLabel>
-                                    <Select
-                                        {...field}
-                                        labelId="application-select-label"
-                                        label="Application"
-                                        size="small"
-                                    // Consider using Autocomplete here if the list is very long and needs search
-                                    >
-                                        <MenuItem value=""><em>None</em></MenuItem>
-                                        {applicationOptions.map((app) => (
-                                            <MenuItem key={app.id} value={app.id}>{app.label}</MenuItem>
-                                        ))}
-                                    </Select>
-                                    {errors.application && <Typography variant="caption" color="error">{errors.application.message}</Typography>}
-                                </FormControl>
-                            )}
-                        />
-                    </Grid>
+						<Grid size={{ xs: 12, md: 4 }}>
+							<Controller
+								name="application"
+								control={control}
+								render={({ field }) => (
+									<FormControl fullWidth error={!!errors.application}>
+										<InputLabel id="application-select-label">Application</InputLabel>
+										<Select
+											{...field}
+											labelId="application-select-label"
+											label="Application"
+											size="small"
+										// Consider using Autocomplete here if the list is very long and needs search
+										>
+											<MenuItem value=""><em>None</em></MenuItem>
+											{applicationOptions.map((app) => (
+												<MenuItem key={app.id} value={app.id}>{app.label}</MenuItem>
+											))}
+										</Select>
+										{errors.application && <Typography variant="caption" color="error">{errors.application.message}</Typography>}
+									</FormControl>
+								)}
+							/>
+						</Grid>
+						<Grid size={{ xs: 12, md: 4 }}>
+							<Controller
+								name="accessType"
+								control={control}
+								render={({ field }) => (
+									<FormControl fullWidth error={!!errors.accessType}>
+										<InputLabel id="access-type-select-label">Access Type</InputLabel>
+										<Select
+											{...field}
+											labelId="access-type-select-label"
+											label="Access Type"
+											size="small"
+										>
+											<MenuItem value=""><em>None</em></MenuItem>
+											{accessTypeOptions.map((type) => (
+												<MenuItem key={type.id} value={type.id}>{type.label }</MenuItem>
+											))}
+										</Select>
+										{errors.accessType && <Typography variant="caption" color="error">{errors.accessType.message}</Typography>}
+									</FormControl>
+								)}
+							/>
+						</Grid>
                     </Grid>
                 </Stack>
-                    <Grid container spacing={2}>
-                        <Grid size={{ xs: 10, md: 4 }}>
-                            <Controller
-                            name="user"
-                            control={control}
-                            render={({ field }) => (
-                                <Autocomplete
-                                    {...field}
-                                    options={userOptions}
-                                    getOptionLabel={(option) => option?.label || ''}
-                                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                                    onChange={(_, data) => field.onChange(data)} // Pass the selected option object or null
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            label="User (ID or Name)"
-                                            variant="outlined"
-                                            error={!!errors.user}
-                                            helperText={errors.user?.message}
-                                            size="small"
-                                        />
-                                    )}
-                                />
-                            )}
-                        />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                        <Controller
-                            name="application"
-                            control={control}
-                            render={({ field }) => (
-                                <FormControl fullWidth error={!!errors.application}>
-                                    <InputLabel id="application-select-label">Application</InputLabel>
-                                    <Select
-                                        {...field}
-                                        labelId="application-select-label"
-                                        label="Application"
-                                        size="small"
-                                    // Consider using Autocomplete here if the list is very long and needs search
-                                    >
-                                        <MenuItem value=""><em>None</em></MenuItem>
-                                        {applicationOptions.map((app) => (
-                                            <MenuItem key={app.id} value={app.id}>{app.label}</MenuItem>
-                                        ))}
-                                    </Select>
-                                    {errors.application && <Typography variant="caption" color="error">{errors.application.message}</Typography>}
-                                </FormControl>
-                            )}
-                        />
-                    </Grid>
-                </Grid>
+				<Grid container spacing={2}>
+					<Grid size={{ xs: 8}}>
+						<Controller
+							name="comment"
+							control={control}
+							render={({ field }) => <TextField {...field} label="Comment" multiline rows={4}  fullWidth/>}
+						/>
+					</Grid>
+				</Grid>
+				<Grid container spacing={2}>
+					<Grid size={{ xs: 8}} display="flex" justifyContent="flex-end">
+						<Button type="submit" variant="contained">Request Access</Button>
+					</Grid>
+				</Grid>
             </Box>
         </Box>
     )

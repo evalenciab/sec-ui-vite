@@ -20,3 +20,9 @@ export interface ISearchFormInput {
     application: string;
     accessType: string;
 } 
+export interface IRequestAccessFormInput {
+    user: IUserOption | null;
+    application: string;
+    accessType: string;
+	comment: string;
+}
