@@ -61,7 +61,7 @@ export const SearchForAccess = () => {
             <Box
                 component="form"
                 onSubmit={handleSubmit(onSubmit)}
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2, border: '1px solid grey', padding: 2, borderRadius: 1 }}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, borderRadius: 1 }}
             >
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 6 }}>

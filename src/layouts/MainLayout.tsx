@@ -32,7 +32,8 @@ const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
   { text: 'Search For Access', icon: <EventIcon />, path: '/searchForAccess' },
   { text: 'User Access History', icon: <BusinessIcon />, path: '/userAccessHistory' },
-  { text: 'Request Access', icon: <AccessTimeIcon />, path: '/requestAccess' }
+  { text: 'Request Access', icon: <AccessTimeIcon />, path: '/requestAccess' },
+  { text: 'Maintain Apps', icon: <BusinessIcon />, path: '/maintainApps' }
 ];
 
 export default function MainLayout() {

@@ -4,6 +4,7 @@ import MainLayout from './layouts/MainLayout'
 import { SearchForAccess } from './pages/SearchForAccess'
 import { UserAccessHistory } from './pages/UserAccessHistory'
 import { RequestAccess } from './pages/RequestAccess'
+import { MaintainApps } from './pages/MaintainApps'
 function App() {
 
   return (
@@ -23,6 +24,10 @@ function App() {
           <Route path="requestAccess">
             <Route index element={<RequestAccess />} />
           </Route>
+		  {/* Maintain Apps Routes */}
+		  <Route path="maintainApps">
+			<Route index element={<MaintainApps />} />
+		  </Route>
 
           {/* 404 Not Found */}
           <Route path="*" element={<div>404 Not Found</div>} />

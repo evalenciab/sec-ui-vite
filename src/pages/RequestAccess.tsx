@@ -42,7 +42,7 @@ export const RequestAccess = () => {
             <Box
                 component="form"
                 onSubmit={handleSubmit(onSubmit)}
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2, border: '1px solid grey', padding: 2, borderRadius: 1 }}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 2, spadding: 2, borderRadius: 1 }}
             >
                 <Stack direction="column" spacing={2}>
                     <Grid container spacing={2}>
