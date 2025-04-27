@@ -6,6 +6,20 @@ export const maintainAppsSchema = z
     appDescription: z.string().optional(),
     deleteInactiveUsers: z.boolean().default(false),
     retentionDays: z.number().int().positive().optional(),
+    businessOwner: z.object({
+      id: z.string().optional(),
+      label: z.string().optional(),
+    }),
+    applicationAdmins: z.array(z.object({
+      id: z.string().optional(),
+      label: z.string().optional(),
+    })).optional().default([]),
+    roles: z.array(z.object({
+      code: z.string(),
+      name: z.string(),
+      description: z.string(),
+      accessType: z.string(),
+    })).optional().default([]),
   })
   .refine(
     (data) => {
