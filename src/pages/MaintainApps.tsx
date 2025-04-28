@@ -24,7 +24,7 @@ import { z } from "zod";
 import { IAccessTypeOption, IUserOption } from "../types/search";
 import { Autocomplete } from "@mui/material";
 import { AddCircle, Delete, Edit } from "@mui/icons-material";
-import { DataGrid, GridColDef, GridRenderCellParams, GridRowsProp, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridRenderCellParams, GridRowParams, GridRowsProp, GridToolbar } from "@mui/x-data-grid";
 const userOptions: IUserOption[] = [
 	{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' },
 	{ id: 'JDOE', label: 'John Doe (JDOE)' },
@@ -126,6 +126,19 @@ export function MaintainApps() {
 
 	const handleRemoveRole = (index: number) => {
 		setValue("roles", watchRoles?.filter((_, i) => i !== index));
+	};
+
+	const handleRowClick = (params: GridRowParams) => {
+		console.log(params);
+		setValue("appName", params.row.appName);
+		setValue("appDescription", params.row.appDescription);
+		setValue("deleteInactiveUsers", params.row.deleteInactiveUsers);
+		setValue("retentionDays", params.row.retentionDays);
+		setValue("businessOwner", params.row.businessOwner);
+		setValue("applicationAdmins", params.row.applicationAdmins);
+		setValue("roles", params.row.roles ?? []);
+		window.scrollTo({ top: 0, behavior: "smooth" });
+		
 	};
 
 	return (
@@ -330,7 +343,7 @@ export function MaintainApps() {
 			</Box>
 			<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 				<Typography variant="h6" component="h2" gutterBottom>Applications</Typography>
-				<DataGrid rows={rows} columns={columns} slots={{ toolbar: GridToolbar }} />
+				<DataGrid rows={rows} columns={columns} slots={{ toolbar: GridToolbar }} onRowClick={handleRowClick} />
 			</Box>
 		</>
 	);
