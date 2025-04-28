@@ -15,9 +15,9 @@ export const maintainAppsSchema = z
       label: z.string().optional(),
     })).optional().default([]),
     roles: z.array(z.object({
-      code: z.string(),
-      name: z.string(),
-      description: z.string(),
+      code: z.string().min(1, 'Code is required'),
+      name: z.string().min(1, 'Name is required'),
+      description: z.string().min(1, 'Description is required'),
       accessType: z.object({
         id: z.string(),
         label: z.string(),

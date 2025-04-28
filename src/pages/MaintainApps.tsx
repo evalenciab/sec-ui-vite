@@ -6,6 +6,7 @@ import {
 	FormControl,
 	FormControlLabel,
 	FormGroup,
+	FormHelperText,
 	FormLabel,
 	Grid,
 	IconButton,
@@ -55,9 +56,11 @@ export function MaintainApps() {
 				id: '',
 				label: '',
 			},
+			roles: [],
+			
 		},
 	});
-
+	console.log(errors);
 	const watchDeleteInactiveUsers = watch("deleteInactiveUsers");
 	const watchRoles = watch("roles");
 
@@ -75,10 +78,10 @@ export function MaintainApps() {
 	};
 
 	return (
-		<Grid container spacing={2}>
-			<Grid size={{ xs: 12, md: 6 }}>
-				<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-					<Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+		<Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ width: "100%" }}>
+			<Grid container spacing={2}>
+				<Grid size={{ xs: 12, md: 6 }}>
+					<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 						<Typography variant="h5" component="h1" gutterBottom>
 							Maintain App Settings
 						</Typography>
@@ -181,96 +184,97 @@ export function MaintainApps() {
 								/>
 							)}
 						/>
-
-						<Grid container justifyContent="flex-end">
-							<Button
-								type="submit"
-								variant="contained"
-								color="primary"
-								sx={{ mt: 2 }}
-							>
-								Create App
-							</Button>
-						</Grid>
 					</Box>
-				</Box>
-			</Grid>
-			<Grid size={{ xs: 12, md: 6 }}>
-				<Grid container spacing={2}>
-					<Grid size={{ xs: 10 }} sx={{display: "flex", justifyContent: "space-between"}}>
-						<Typography variant="h6" component="h2" gutterBottom>Roles</Typography>
-						
-						<IconButton color="primary" onClick={handleAddRole}>
-							<AddCircle />
-						</IconButton>
-					</Grid>
 				</Grid>
-				<Grid container spacing={2} sx={{maxHeight: "500px", overflow: "auto"}}>
-					<Grid size={{ xs: 10 }}>
-						{
-							watchRoles?.map((role, index) => (
-								<Grid key={`role-${index}`} size={{ xs: 12 }} sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
-									<TextField
-										label="Code"
-										{...register(`roles.${index}.code`)}
-										error={!!errors.roles?.[index]?.code}
-										helperText={errors.roles?.[index]?.code?.message}
-										fullWidth
-										size="small"
-									/>
-									<TextField
-										label="Name"
-										{...register(`roles.${index}.name`)}
-										error={!!errors.roles?.[index]?.name}
-										helperText={errors.roles?.[index]?.name?.message}
-										fullWidth
-										size="small"
-									/>
-									<TextField
-										label="Description"
-										{...register(`roles.${index}.description`)}
-										error={!!errors.roles?.[index]?.description}
-										helperText={errors.roles?.[index]?.description?.message}
-										fullWidth
-										rows={2}
-										multiline
-										size="small"
-									/>
-									<FormControl>
-										<FormLabel>Access Type</FormLabel>
-										<RadioGroup
-											{...register(`roles.${index}.accessType`)}
-											row
-											onChange={(e) => {
-												const newAccessType = e.target.value;
-												const newAccessTypeOption = accessTypeOptions.find((option) => option.id === newAccessType);
-												if (newAccessTypeOption) {
-													setValue(`roles.${index}.accessType`, newAccessTypeOption);
-												}
-											}}
+				<Grid size={{ xs: 12, md: 6 }}>
+					<Grid container spacing={2}>
+						<Grid size={{ xs: 10 }} sx={{ display: "flex", justifyContent: "space-between" }}>
+							<Typography variant="h6" component="h2" gutterBottom>Roles</Typography>
+
+							<IconButton color="primary" onClick={handleAddRole}>
+								<AddCircle />
+							</IconButton>
+						</Grid>
+					</Grid>
+					<Grid container spacing={2} sx={{ maxHeight: "500px", overflow: "auto" }}>
+						<Grid size={{ xs: 10 }}>
+							{
+								watchRoles?.map((role, index) => (
+									<Grid key={`role-${index}`} size={{ xs: 12 }} sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
+										<TextField
+											label="Code"
+											{...register(`roles.${index}.code`)}
+											error={!!errors.roles?.[index]?.code}
+											helperText={errors.roles?.[index]?.code?.message}
+											fullWidth
+											size="small"
+										/>
+										<TextField
+											label="Name"
+											{...register(`roles.${index}.name`)}
+											error={!!errors.roles?.[index]?.name}
+											helperText={errors.roles?.[index]?.name?.message}
+											fullWidth
+											size="small"
+										/>
+										<TextField
+											label="Description"
+											{...register(`roles.${index}.description`)}
+											error={!!errors.roles?.[index]?.description}
+											helperText={errors.roles?.[index]?.description?.message}
+											fullWidth
+											rows={2}
+											multiline
+											size="small"
+										/>
+										<FormControl>
+											<FormLabel>Access Type</FormLabel>
+											<RadioGroup
+												{...register(`roles.${index}.accessType`)}
+												row
+												value={role.accessType?.id}
+												onChange={(e) => {
+													const newAccessType = e.target.value;
+													const newAccessTypeOption = accessTypeOptions.find((option) => option.id === newAccessType);
+													if (newAccessTypeOption) {
+														setValue(`roles.${index}.accessType`, newAccessTypeOption);
+													}
+												}}
+											>
+												{accessTypeOptions.map((option) => (
+													<FormControlLabel key={option.id} value={option.id} control={<Radio />} label={option.label} />
+												))}
+											</RadioGroup>
+											<FormHelperText>{errors.roles?.[index]?.accessType?.message}</FormHelperText>
+										</FormControl>
+										<Button
+											color="error"
+											onClick={() => handleRemoveRole(index)}
+											sx={{ width: "fit-content", alignSelf: "flex-end" }}
+											size="small"
+											variant="outlined"
+											startIcon={<Delete />}
+
 										>
-											{accessTypeOptions.map((option) => (
-												<FormControlLabel key={option.id} value={option.id} control={<Radio />} label={option.label} />
-											))}
-										</RadioGroup>
-									</FormControl>
-									<Button 
-										color="error" 
-										onClick={() => handleRemoveRole(index)} 
-										sx={{width: "fit-content", alignSelf: "flex-end"}} 
-										size="small" 
-										variant="outlined"
-										startIcon={<Delete />}
-										
-									>
-										Remove
-									</Button>
-								</Grid>
-							))
-						}
+											Remove
+										</Button>
+									</Grid>
+								))
+							}
+						</Grid>
 					</Grid>
 				</Grid>
+				<Grid container justifyContent="flex-end">
+					<Button
+						type="submit"
+						variant="contained"
+						color="primary"
+						sx={{ mt: 2 }}
+					>
+						Create App
+					</Button>
+				</Grid>
 			</Grid>
-		</Grid>
+		</Box>
 	);
 }
