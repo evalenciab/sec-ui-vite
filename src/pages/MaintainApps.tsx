@@ -23,8 +23,8 @@ import {
 import { z } from "zod";
 import { IAccessTypeOption, IUserOption } from "../types/search";
 import { Autocomplete } from "@mui/material";
-import { AddCircle, Delete } from "@mui/icons-material";
-import { DataGrid, GridColDef, GridRowsProp, GridToolbar } from "@mui/x-data-grid";
+import { AddCircle, Delete, Edit } from "@mui/icons-material";
+import { DataGrid, GridColDef, GridRenderCellParams, GridRowsProp, GridToolbar } from "@mui/x-data-grid";
 const userOptions: IUserOption[] = [
 	{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' },
 	{ id: 'JDOE', label: 'John Doe (JDOE)' },
@@ -39,23 +39,54 @@ const accessTypeOptions: IAccessTypeOption[] = [
 	{ id: accessTypeMap.CUSTOMER.code, label: accessTypeMap.CUSTOMER.label },
 ];
 const rows: GridRowsProp = [
-	{ id: 1, appName: 'Reliquias App', appDescription: 'Reliquias App Description', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active' },
-	{ id: 2, appName: 'Reliquias App 2', appDescription: 'Reliquias App Description 2', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active' },
-	{ id: 3, appName: 'Reliquias App 3', appDescription: 'Reliquias App Description 3', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active' },
-	{ id: 4, appName: 'Reliquias App 4', appDescription: 'Reliquias App Description 4', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active' },
-	{ id: 5, appName: 'Reliquias App 5', appDescription: 'Reliquias App Description 5', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active' },
-	{ id: 6, appName: 'Reliquias App 6', appDescription: 'Reliquias App Description 6', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active' },
+	{ id: 1, appName: 'Reliquias App', appDescription: 'Reliquias App Description', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active', totalUsers: 100 },
+	{ id: 2, appName: 'Reliquias App 2', appDescription: 'Reliquias App Description 2', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active', totalUsers: 200 },
+	{ id: 3, appName: 'Reliquias App 3', appDescription: 'Reliquias App Description 3', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active', totalUsers: 100 },
+	{ id: 4, appName: 'Reliquias App 4', appDescription: 'Reliquias App Description 4', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active', totalUsers: 300 },
+	{ id: 5, appName: 'Reliquias App 5', appDescription: 'Reliquias App Description 5', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active', totalUsers: 100 },
+	{ id: 6, appName: 'Reliquias App 6', appDescription: 'Reliquias App Description 6', deleteInactiveUsers: false, retentionDays: 0, businessOwner: { id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }, applicationAdmins: [{ id: 'EVALENCIA', label: 'Elias Valencia (EVALENCIA)' }], status: 'Active', totalUsers: 500 },
 ];
 const columns: GridColDef[] = [
     { field: 'appName', headerName: 'Application', width: 200 },
 	{ field: 'appDescription', headerName: 'Description', width: 200 },
 	{ field: 'deleteInactiveUsers', headerName: 'Delete Inactive Users', width: 200 },
 	{ field: 'retentionDays', headerName: 'Retention Days', width: 200 },
-	{ field: 'businessOwner', headerName: 'Business Owner', width: 200 },
-	{ field: 'applicationAdmins', headerName: 'Application Admins', width: 200 },
-	{ field: 'status', headerName: 'Status', width: 200 },
-	{ field: 'actions', headerName: 'Actions', width: 200 },
+	{ field: 'businessOwner', headerName: 'Business Owner', width: 200, renderCell: (params: GridRenderCellParams) => params.row.businessOwner?.label },
+	{ field: 'applicationAdmins', headerName: 'Application Admins', width: 200, renderCell: (params: GridRenderCellParams) => params.row.applicationAdmins?.map((admin: IUserOption) => admin?.label).join(', ') },
+	{ field: 'totalUsers', headerName: 'Total Users', width: 100, align: 'center' },
+	{ field: 'status', headerName: 'Status', width: 100, align: 'center' },
+	{
+		field: 'actions',
+		headerName: 'Actions',
+		width: 150,
+		align: 'center',
+		sortable: false,
+		disableColumnMenu: true,
+		renderCell: (params: GridRenderCellParams) => {
+			const handleEdit = (e: React.MouseEvent<HTMLButtonElement>) => {
+				e.stopPropagation();
+				console.log('Edit clicked for row:', params.id);
+				// TODO: Implement edit logic (e.g., open modal, navigate to edit page)
+			};
 
+			const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+				e.stopPropagation();
+				console.log('Delete clicked for row:', params.id);
+				// TODO: Implement delete logic (e.g., show confirmation, call API)
+			};
+
+			return (
+				<Box>
+					<IconButton onClick={handleEdit} color="primary">
+						<Edit />
+					</IconButton>
+					<IconButton onClick={handleDelete} color="error">
+						<Delete />
+					</IconButton>
+				</Box>
+			);
+		},
+	},
 ];
 export function MaintainApps() {
 	const {
