@@ -3,6 +3,7 @@ import {
 	Box,
 	Button,
 	Checkbox,
+	Divider,
 	FormControl,
 	FormControlLabel,
 	FormGroup,
@@ -341,9 +342,25 @@ export function MaintainApps() {
 					</Grid>
 				</Grid>
 			</Box>
+			<Divider sx={{ my: 2 }} />
 			<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 				<Typography variant="h6" component="h2" gutterBottom>Applications</Typography>
-				<DataGrid rows={rows} columns={columns} slots={{ toolbar: GridToolbar }} onRowClick={handleRowClick} />
+				<DataGrid 
+					rows={rows} 
+					columns={columns} 
+					slots={{ toolbar: GridToolbar }} 
+					onRowClick={handleRowClick} 
+					showToolbar={true}
+					initialState={{
+						filter: {
+							filterModel: {
+								items: [],
+								
+							},
+						},
+					}}
+					
+				/>
 			</Box>
 		</>
 	);
