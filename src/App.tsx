@@ -5,13 +5,14 @@ import { SearchForAccess } from './pages/SearchForAccess'
 import { UserAccessHistory } from './pages/UserAccessHistory'
 import { RequestAccess } from './pages/RequestAccess'
 import { MaintainApps } from './pages/MaintainApps'
+import { Dashboard } from './pages/Dashboard'
 function App() {
 
   return (
     <>
       <Routes>
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<Typography variant="body1">Dashboard...</Typography>} />
+          <Route index element={<Dashboard />} />
            {/* Search For Access Routes */}
           <Route path="searchForAccess">
             <Route index element={<SearchForAccess />} />
