@@ -71,6 +71,7 @@ export const SearchForAccess = () => {
                             render={({ field }) => (
                                 <Autocomplete
                                     {...field}
+                                    value={field.value ?? null}
                                     options={userOptions}
                                     getOptionLabel={(option) => option?.label || ''}
                                     isOptionEqualToValue={(option, value) => option.id === value.id}
