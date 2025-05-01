@@ -5,28 +5,35 @@ import {
 	Checkbox,
 	FormControlLabel,
 	FormGroup,
+	Grid,
+	Tab,
+	Tabs,
 	TextField,
 	Typography,
 } from "@mui/material";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
 	MaintainAppsFormData,
 	maintainAppsSchema,
 } from "../schemas/maintain_apps";
 import { z } from "zod";
-
+import { useState } from "react";
+import { TabContext, TabList, TabPanel } from "@mui/lab";
+import { AppForm } from "../components/AppForm/AppForm";
+import { RolesForm } from "../components/RolesForm";
+import { RolesTable } from "../components/RolesTable";
 export function MaintainApps() {
-	const {
-		control,
-		handleSubmit,
-		register,
-		watch,
-		formState: { errors },
-	} = useForm<z.input<typeof maintainAppsSchema>>({
+	const [tab, setTab] = useState("1");
+	const appForm = useForm<z.input<typeof maintainAppsSchema>>({
 		resolver: zodResolver(maintainAppsSchema),
 	});
+	const { handleSubmit } = appForm;
+	const { fields, append, remove } = useFieldArray({
+		control: appForm.control,
+		name: "roles",
+	});
 
-	const watchDeleteInactiveUsers = watch("deleteInactiveUsers");
+	//const watchDeleteInactiveUsers = watch("deleteInactiveUsers");
 
 	const onSubmit = (data: z.input<typeof maintainAppsSchema>) => {
 		console.log(data);
@@ -36,60 +43,46 @@ export function MaintainApps() {
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 			<Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-				<Typography variant="h5" component="h1" gutterBottom>
-					Maintain App Settings
-				</Typography>
-				<TextField
-					label="App Name"
-					{...register("appName")}
-					error={!!errors.appName}
-					helperText={errors.appName?.message}
-					required
-					fullWidth
-				/>
-				<TextField
-					label="App Description"
-					{...register("appDescription")}
-					error={!!errors.appDescription}
-					helperText={errors.appDescription?.message}
-					multiline
-					rows={3}
-					fullWidth
-				/>
-				<FormGroup>
-					<Controller
-						name="deleteInactiveUsers"
-						control={control}
-						render={({ field }) => (
-							<FormControlLabel
-								control={
-									<Checkbox
-										{...field}
-										checked={field.value ?? false}
-									/>
-								}
-								label="Delete Inactive Users"
-							/>
-						)}
-					/>
-				</FormGroup>
-				{watchDeleteInactiveUsers && (
-					<TextField
-						label="Retention Days"
-						type="number"
-						{...register("retentionDays", {
-							valueAsNumber: true,
-						})}
-						error={!!errors.retentionDays}
-						helperText={errors.retentionDays?.message}
-						required={watchDeleteInactiveUsers}
-						fullWidth
-						InputProps={{ inputProps: { min: 1 } }}
-					/>
-				)}
-				<Button type="submit" variant="contained" color="primary">
-					Save Settings
-				</Button>
+				<TabContext value={tab}>
+					<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+						<TabList
+							onChange={(_, newValue) => setTab(newValue)}
+							aria-label="basic tabs example"
+						>
+							<Tab label="Application Settings" value={"1"} />
+							<Tab label="Roles" value={"2"} />
+						</TabList>
+					</Box>
+					<TabPanel value={"1"}>
+						<AppForm form={appForm} />
+					</TabPanel>
+					<TabPanel value={"2"}>
+						<Grid container spacing={2}>
+							<Grid size={4}>
+								<RolesForm appendRole={append} />
+							</Grid>
+							<Grid size={8}>
+								<RolesTable roles={fields} />
+							</Grid>
+						</Grid>
+					</TabPanel>
+				</TabContext>
+				<Grid
+					size={12}
+					sx={{ display: "flex", justifyContent: "center", gap: 2 }}
+				>
+					<Button variant="contained" color="secondary" size="small">
+						Cancel
+					</Button>
+					<Button
+						type="submit"
+						variant="contained"
+						color="primary"
+						size="small"
+					>
+						Save Settings
+					</Button>
+				</Grid>
 			</Box>
 		</Box>
 	);
