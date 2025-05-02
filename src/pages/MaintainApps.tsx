@@ -15,6 +15,7 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
 	MaintainAppsFormData,
 	maintainAppsSchema,
+	roleSchema,
 } from "../schemas/maintain_apps";
 import { z } from "zod";
 import { useState } from "react";
@@ -24,6 +25,7 @@ import { RolesForm } from "../components/RolesForm";
 import { RolesTable } from "../components/RolesTable";
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
+	const [tempRole, setTempRole] = useState<z.input<typeof roleSchema> | null>(null);
 	const appForm = useForm<z.input<typeof maintainAppsSchema>>({
 		resolver: zodResolver(maintainAppsSchema),
 	});
@@ -38,6 +40,12 @@ export function MaintainApps() {
 	const onSubmit = (data: z.input<typeof maintainAppsSchema>) => {
 		console.log(data);
 		// Handle form submission logic here (e.g., API call)
+	};
+
+	const editRole = (role: z.input<typeof roleSchema>) => {
+		console.log(role);
+		
+		setTempRole(role);
 	};
 
 	return (
@@ -59,10 +67,10 @@ export function MaintainApps() {
 					<TabPanel value={"2"}>
 						<Grid container spacing={2}>
 							<Grid size={4}>
-								<RolesForm appendRole={append} />
+								<RolesForm appendRole={append} tempRole={tempRole} />
 							</Grid>
 							<Grid size={8}>
-								<RolesTable roles={fields} />
+								<RolesTable roles={fields} editRole={editRole} />
 							</Grid>
 						</Grid>
 					</TabPanel>

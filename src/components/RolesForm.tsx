@@ -17,6 +17,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Add, Create } from "@mui/icons-material";
+import { useEffect } from "react";
 
 const accessTypes = [
 	{ label: "Supplier", value: "Supplier" },
@@ -30,10 +31,12 @@ const secureTo = [
 ];
 interface RolesFormProps {
 	appendRole: (role: z.input<typeof roleSchema>) => void;
+	tempRole: z.input<typeof roleSchema> | null;
 }
-export function RolesForm({ appendRole }: RolesFormProps) {
+export function RolesForm({ appendRole, tempRole }: RolesFormProps) {
 	const roleForm = useForm<z.input<typeof roleSchema>>({
 		resolver: zodResolver(roleSchema),
+		defaultValues: tempRole ? tempRole : undefined,
 	});
 	const {
 		handleSubmit,
@@ -44,6 +47,13 @@ export function RolesForm({ appendRole }: RolesFormProps) {
 		reset,
 	} = roleForm;
 
+	useEffect(() => {
+		if (tempRole) {
+			console.log("Resetting form with tempRole", tempRole);
+			reset(tempRole);
+		}
+	}, [tempRole]);
+
 	const onSubmit = () => {
 		console.log("First validade the data");
 		trigger();
@@ -51,6 +61,7 @@ export function RolesForm({ appendRole }: RolesFormProps) {
 		if (isValid) {
 			console.log("Data is valid, submit the data");
 			appendRole(roleForm.getValues());
+			reset();
 		} else {
 			console.log("Data is invalid, show errors");
 			console.log(errors);
