@@ -32,25 +32,37 @@ const secureTo = [
 interface RolesFormProps {
 	appendRole: (role: z.input<typeof roleSchema>) => void;
 	tempRole: z.input<typeof roleSchema> | null;
+	clearForm: () => void;
 }
-export function RolesForm({ appendRole, tempRole }: RolesFormProps) {
+export function RolesForm({ appendRole, tempRole, clearForm }: RolesFormProps) {
 	const roleForm = useForm<z.input<typeof roleSchema>>({
 		resolver: zodResolver(roleSchema),
-		defaultValues: tempRole ? tempRole : undefined,
+		defaultValues: {
+			code: '',
+			name: '',
+			description: '',
+			accessType: [],
+			secureTo: [],
+		}
 	});
 	const {
 		handleSubmit,
 		control,
 		register,
-		formState: { errors, isValid },
+		formState: { errors, isValid},
 		trigger,
 		reset,
+		
+		
 	} = roleForm;
 
 	useEffect(() => {
 		if (tempRole) {
 			console.log("Resetting form with tempRole", tempRole);
 			reset(tempRole);
+		} else {
+			console.log("Resetting form with default values");
+			reset();
 		}
 	}, [tempRole]);
 
@@ -68,6 +80,8 @@ export function RolesForm({ appendRole, tempRole }: RolesFormProps) {
 		}
 	};
 	const resetForm = () => {
+		console.log("Resetting form with default values");
+		clearForm();
 		reset();
 	};
 	return (

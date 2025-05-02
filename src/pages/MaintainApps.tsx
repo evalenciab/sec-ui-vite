@@ -48,6 +48,20 @@ export function MaintainApps() {
 		setTempRole(role);
 	};
 
+	const deleteRole = (roleCode: string) => {
+		console.log(roleCode);
+	};
+
+	const clearForm = () => {
+		setTempRole({
+			code: '',
+			name: '',
+			description: '',
+			accessType: [],
+			secureTo: [],
+		});
+	};
+
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 			<Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -67,10 +81,10 @@ export function MaintainApps() {
 					<TabPanel value={"2"}>
 						<Grid container spacing={2}>
 							<Grid size={4}>
-								<RolesForm appendRole={append} tempRole={tempRole} />
+								<RolesForm appendRole={append} tempRole={tempRole} clearForm={clearForm} />
 							</Grid>
 							<Grid size={8}>
-								<RolesTable roles={fields} editRole={editRole} />
+								<RolesTable roles={fields} editRole={editRole} deleteRole={deleteRole} />
 							</Grid>
 						</Grid>
 					</TabPanel>
