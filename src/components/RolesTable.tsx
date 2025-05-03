@@ -5,6 +5,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconBut
 import EditIcon from '@mui/icons-material/Edit';
 import { Delete } from "@mui/icons-material";
 import { useState } from "react";
+import { useRoleStore } from "../stores/roles.store";
 
 type RoleInput = z.input<typeof roleSchema>;
 
@@ -39,6 +40,8 @@ const generateGridRows = (roles: RoleInput[]): RoleGridRow[] => {
 export function RolesTable({ roles, editRole, deleteRole }: RolesTableProps) {
 	const [open, setOpen] = useState(false);
 	const [roleToDelete, setRoleToDelete] = useState<RoleInput | null>(null);
+	
+	const { setSelectedRoleRowData, allRoles } = useRoleStore();
 
 	const handleOpenDeleteDialog = (role: RoleInput) => {
 		setRoleToDelete(role);
@@ -64,7 +67,10 @@ export function RolesTable({ roles, editRole, deleteRole }: RolesTableProps) {
 				const originalRole = params.row.originalRole;
 				return (
 					<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-						<IconButton onClick={() => editRole(originalRole)} aria-label="edit">
+						<IconButton onClick={() => {
+							setSelectedRoleRowData(originalRole);
+							// editRole(originalRole);
+						}} aria-label="edit">
 							<EditIcon />
 						</IconButton>
 						<IconButton onClick={() => handleOpenDeleteDialog(originalRole)} aria-label="delete">
@@ -81,7 +87,7 @@ export function RolesTable({ roles, editRole, deleteRole }: RolesTableProps) {
 		{ field: 'secureTo', headerName: 'Secure To', width: 180 },
 	];
 
-	const gridRows = generateGridRows(roles);
+	const gridRows = generateGridRows(allRoles);
 
 	return (
 		<>

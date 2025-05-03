@@ -16,9 +16,9 @@ import {
 	useForm,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Add, Create } from "@mui/icons-material";
+import { Add, Clear, Create } from "@mui/icons-material";
 import { useEffect } from "react";
-
+import { useRoleStore } from "../stores/roles.store";
 const accessTypes = [
 	{ label: "Supplier", value: "Supplier" },
 	{ label: "Employee", value: "Employee" },
@@ -35,6 +35,8 @@ interface RolesFormProps {
 	clearForm: () => void;
 }
 export function RolesForm({ appendRole, tempRole, clearForm }: RolesFormProps) {
+	const { setSelectedRoleRowData, selectedRoleRowData, setAllRoles, allRoles } = useRoleStore();
+	
 	const roleForm = useForm<z.input<typeof roleSchema>>({
 		resolver: zodResolver(roleSchema),
 		defaultValues: {
@@ -57,14 +59,14 @@ export function RolesForm({ appendRole, tempRole, clearForm }: RolesFormProps) {
 	} = roleForm;
 
 	useEffect(() => {
-		if (tempRole) {
-			console.log("Resetting form with tempRole", tempRole);
-			reset(tempRole);
+		if (selectedRoleRowData) {
+			console.log("Resetting form with tempRole", selectedRoleRowData);
+			reset(selectedRoleRowData);
 		} else {
 			console.log("Resetting form with default values");
 			reset();
 		}
-	}, [tempRole]);
+	}, [selectedRoleRowData, reset]);
 
 	const onSubmit = () => {
 		console.log("First validade the data");
@@ -72,8 +74,18 @@ export function RolesForm({ appendRole, tempRole, clearForm }: RolesFormProps) {
 		console.log("Then submit the data");
 		if (isValid) {
 			console.log("Data is valid, submit the data");
-			appendRole(roleForm.getValues());
-			reset();
+			if (selectedRoleRowData) {
+				//editRole(roleForm.getValues());
+				console.log("Edit role", roleForm.getValues());
+				setAllRoles(allRoles.map(role => role.code === selectedRoleRowData.code ? roleForm.getValues() : role));
+			} else {
+				appendRole(roleForm.getValues());
+				setAllRoles([...allRoles, roleForm.getValues()]);
+				reset();
+				setSelectedRoleRowData(null);
+			}
+			//appendRole(roleForm.getValues());
+			//reset();
 		} else {
 			console.log("Data is invalid, show errors");
 			console.log(errors);
@@ -81,24 +93,19 @@ export function RolesForm({ appendRole, tempRole, clearForm }: RolesFormProps) {
 	};
 	const resetForm = () => {
 		console.log("Resetting form with default values");
+		setSelectedRoleRowData(null);
 		clearForm();
-		reset();
+		reset({
+			code: '',
+			name: '',
+			description: '',
+			accessType: [],
+			secureTo: [],
+		});
 	};
 	return (
 		<Box component="form" noValidate>
 			<Grid container spacing={2}>
-				<Grid
-					size={12}
-					sx={{ display: "flex", justifyContent: "flex-end" }}
-				>
-					<Button
-						variant="outlined"
-						startIcon={<Create />}
-						onClick={resetForm}
-					>
-						Create Role
-					</Button>
-				</Grid>
 				<Grid
 					size={12}
 					sx={{ display: "flex", flexDirection: "column", gap: 2 }}
@@ -203,15 +210,22 @@ export function RolesForm({ appendRole, tempRole, clearForm }: RolesFormProps) {
 				</Grid>
 				<Grid
 					size={12}
-					sx={{ display: "flex", justifyContent: "flex-end" }}
+					sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}
 				>
+					<Button
+						variant="outlined"
+						startIcon={<Clear />}
+						onClick={resetForm}
+					>
+						Clear
+					</Button>
 					<Button
 						variant="contained"
 						color="primary"
 						startIcon={<Add />}
 						onClick={onSubmit}
 					>
-						Add Role
+						{selectedRoleRowData ? "Update Role" : "Add Role"}
 					</Button>
 				</Grid>
 			</Grid>

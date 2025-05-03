@@ -23,6 +23,7 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AppForm } from "../components/AppForm/AppForm";
 import { RolesForm } from "../components/RolesForm";
 import { RolesTable } from "../components/RolesTable";
+
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
 	const [tempRole, setTempRole] = useState<z.input<typeof roleSchema> | null>(null);
@@ -45,7 +46,7 @@ export function MaintainApps() {
 	const editRole = (role: z.input<typeof roleSchema>) => {
 		console.log(role);
 		
-		setTempRole(role);
+		//setTempRole(role);
 	};
 
 	const deleteRole = (roleCode: string) => {
@@ -53,13 +54,13 @@ export function MaintainApps() {
 	};
 
 	const clearForm = () => {
-		setTempRole({
+		/*setTempRole({
 			code: '',
 			name: '',
 			description: '',
 			accessType: [],
 			secureTo: [],
-		});
+		});*/
 	};
 
 	return (
