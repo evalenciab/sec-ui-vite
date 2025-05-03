@@ -23,14 +23,15 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AppForm } from "../components/AppForm/AppForm";
 import { RolesForm } from "../components/RolesForm";
 import { RolesTable } from "../components/RolesTable";
-
+import { useApplicationStore } from "../stores/application.store";
+import { AppsTable } from "../components/AppsTable";
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
-	const [tempRole, setTempRole] = useState<z.input<typeof roleSchema> | null>(null);
+	const { setSelectedApplicationRowData, selectedApplicationRowData, setAllApplications, allApplications } = useApplicationStore();
 	const appForm = useForm<z.input<typeof maintainAppsSchema>>({
 		resolver: zodResolver(maintainAppsSchema),
 	});
-	const { handleSubmit } = appForm;
+	const { handleSubmit, reset } = appForm;
 	const { fields, append, remove } = useFieldArray({
 		control: appForm.control,
 		name: "roles",
@@ -41,6 +42,20 @@ export function MaintainApps() {
 	const onSubmit = (data: z.input<typeof maintainAppsSchema>) => {
 		console.log(data);
 		// Handle form submission logic here (e.g., API call)
+		setAllApplications([...allApplications, data]);
+		// Reset the form to default values and clear the selected application row data
+		setSelectedApplicationRowData(null);
+		reset(
+			{
+				appId: '',
+				appName: '',
+				appDescription: '',
+				deleteInactiveUsers: false,
+				retentionDays: 0,
+				roles: [],
+					
+			}
+		);
 	};
 
 	const editRole = (role: z.input<typeof roleSchema>) => {
@@ -82,7 +97,7 @@ export function MaintainApps() {
 					<TabPanel value={"2"}>
 						<Grid container spacing={2}>
 							<Grid size={4}>
-								<RolesForm appendRole={append} tempRole={tempRole} clearForm={clearForm} />
+								<RolesForm appendRole={append} clearForm={clearForm} />
 							</Grid>
 							<Grid size={8}>
 								<RolesTable roles={fields} editRole={editRole} deleteRole={deleteRole} />
@@ -107,6 +122,11 @@ export function MaintainApps() {
 					</Button>
 				</Grid>
 			</Box>
+			<Grid container spacing={2}>
+				<Grid size={12}>
+					<AppsTable />
+				</Grid>
+			</Grid>
 		</Box>
 	);
 }

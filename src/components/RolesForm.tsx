@@ -31,10 +31,9 @@ const secureTo = [
 ];
 interface RolesFormProps {
 	appendRole: (role: z.input<typeof roleSchema>) => void;
-	tempRole: z.input<typeof roleSchema> | null;
 	clearForm: () => void;
 }
-export function RolesForm({ appendRole, tempRole, clearForm }: RolesFormProps) {
+export function RolesForm({ appendRole, clearForm }: RolesFormProps) {
 	const { setSelectedRoleRowData, selectedRoleRowData, setAllRoles, allRoles } = useRoleStore();
 	
 	const roleForm = useForm<z.input<typeof roleSchema>>({

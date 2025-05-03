@@ -11,6 +11,7 @@ export const roleSchema = z.object({
 
 export const maintainAppsSchema = z
   .object({
+	appId: z.string().optional(),
     appName: z.string().min(1, 'App Name is required'),
     appDescription: z.string().optional(),
     deleteInactiveUsers: z.boolean().default(false),

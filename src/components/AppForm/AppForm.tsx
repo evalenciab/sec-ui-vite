@@ -36,13 +36,19 @@ export function AppForm({
 				<Typography variant="h5" component="h1" gutterBottom>
 					Maintain App Settings
 				</Typography>
-
+				<TextField
+					label="App ID"
+					{...register("appId")}
+					error={!!errors.appId}
+					helperText={errors.appId?.message}
+					required
+					fullWidth
+					size="small"
+				/>
 				<TextField
 					label="App Name"
 					{...register("appName")}
 					error={!!errors.appName}
-					helperText={errors.appName?.message}
-					required
 					fullWidth
 					size="small"
 				/>
