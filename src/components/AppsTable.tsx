@@ -7,6 +7,7 @@ import { Button, Box, IconButton } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 interface ApplicationGridRow extends GridRowModel {
 	id: string;
+	appId: string;
 	appName: string;
 	appDescription: string;
 	roles: z.input<typeof roleSchema>[];
@@ -20,6 +21,7 @@ const generateGridRows = (
 ): ApplicationGridRow[] => {
 	return applications.map((application) => ({
 		id: application.appId || "",
+		appId: application.appId || "",
 		appName: application.appName || "",
 		appDescription: application.appDescription || "",
 		deleteInactiveUsers: application.deleteInactiveUsers || false,
@@ -33,14 +35,14 @@ export function AppsTable() {
 	const { allApplications } = useApplicationStore();
 	const columns: GridColDef<ApplicationGridRow>[] = [
 		{ field: "appId", headerName: "App ID", width: 100 },
-		{ field: "appName", headerName: "App Name", width: 100 },
-		{ field: "appDescription", headerName: "App Description", width: 100 },
+		{ field: "appName", headerName: "App Name", width: 200 },
+		{ field: "appDescription", headerName: "App Description", width: 200 },
 		{
 			field: "deleteInactiveUsers",
 			headerName: "Delete Inactive Users",
-			width: 100,
+			width: 150,
 		},
-		{ field: "retentionDays", headerName: "Retention Days", width: 100 },
+		{ field: "retentionDays", headerName: "Retention Days", width: 150 },
 		{
 			field: "roles",
 			headerName: "Roles",
@@ -74,5 +76,5 @@ export function AppsTable() {
 		},
 	];
 	const gridRows = generateGridRows(allApplications);
-	return <DataGrid rows={gridRows} columns={columns} />;
+	return <DataGrid rows={gridRows} columns={columns} density="compact" />;
 }

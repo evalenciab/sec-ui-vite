@@ -9,11 +9,6 @@ import { useRoleStore } from "../stores/roles.store";
 
 type RoleInput = z.input<typeof roleSchema>;
 
-interface RolesTableProps {
-	roles: RoleInput[];
-	editRole: (role: RoleInput) => void;
-	deleteRole: (roleCode: string) => void;
-}
 
 interface RoleGridRow extends GridRowModel {
 	id: string;
@@ -37,11 +32,11 @@ const generateGridRows = (roles: RoleInput[]): RoleGridRow[] => {
 	}));
 };
 
-export function RolesTable({ roles, editRole, deleteRole }: RolesTableProps) {
+export function RolesTable() {
 	const [open, setOpen] = useState(false);
 	const [roleToDelete, setRoleToDelete] = useState<RoleInput | null>(null);
 	
-	const { setSelectedRoleRowData, allRoles } = useRoleStore();
+	const { setSelectedRoleRowData, allRoles, setAllRoles } = useRoleStore();
 
 	const handleOpenDeleteDialog = (role: RoleInput) => {
 		setRoleToDelete(role);
@@ -55,7 +50,9 @@ export function RolesTable({ roles, editRole, deleteRole }: RolesTableProps) {
 
 	const handleDeleteConfirm = () => {
 		if (roleToDelete) {
-			deleteRole(roleToDelete.code);
+			//deleteRole(roleToDelete.code);
+			console.log(`Role to delete: ${roleToDelete.code}`);
+			setAllRoles(allRoles.filter((r) => r.code !== roleToDelete.code));
 		}
 		handleClose();
 	};

@@ -19,6 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Add, Clear, Create } from "@mui/icons-material";
 import { useEffect } from "react";
 import { useRoleStore } from "../stores/roles.store";
+import { enqueueSnackbar } from "notistack";
 const accessTypes = [
 	{ label: "Supplier", value: "Supplier" },
 	{ label: "Employee", value: "Employee" },
@@ -78,10 +79,17 @@ export function RolesForm({ appendRole, clearForm }: RolesFormProps) {
 				console.log("Edit role", roleForm.getValues());
 				setAllRoles(allRoles.map(role => role.code === selectedRoleRowData.code ? roleForm.getValues() : role));
 			} else {
-				appendRole(roleForm.getValues());
-				setAllRoles([...allRoles, roleForm.getValues()]);
-				reset();
-				setSelectedRoleRowData(null);
+				// check if the role already exists
+				if (allRoles.some(role => role.code === roleForm.getValues().code)) {
+					console.log("Role already exists, show error");
+					//toast.error("Role already exists");
+					enqueueSnackbar("Role already exists", { variant: "error" });
+				} else {
+					appendRole(roleForm.getValues());
+					setAllRoles([...allRoles, roleForm.getValues()]);
+					reset();
+					setSelectedRoleRowData(null);
+				}
 			}
 			//appendRole(roleForm.getValues());
 			//reset();

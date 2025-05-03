@@ -25,9 +25,12 @@ import { RolesForm } from "../components/RolesForm";
 import { RolesTable } from "../components/RolesTable";
 import { useApplicationStore } from "../stores/application.store";
 import { AppsTable } from "../components/AppsTable";
+import { useRoleStore } from "../stores/roles.store";
+
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
 	const { setSelectedApplicationRowData, selectedApplicationRowData, setAllApplications, allApplications } = useApplicationStore();
+	const { setSelectedRoleRowData, selectedRoleRowData, setAllRoles, allRoles } = useRoleStore();
 	const appForm = useForm<z.input<typeof maintainAppsSchema>>({
 		resolver: zodResolver(maintainAppsSchema),
 	});
@@ -56,6 +59,9 @@ export function MaintainApps() {
 					
 			}
 		);
+		// reset roles state
+		setSelectedRoleRowData(null);
+		setAllRoles([]);
 	};
 
 	const editRole = (role: z.input<typeof roleSchema>) => {
@@ -100,7 +106,7 @@ export function MaintainApps() {
 								<RolesForm appendRole={append} clearForm={clearForm} />
 							</Grid>
 							<Grid size={8}>
-								<RolesTable roles={fields} editRole={editRole} deleteRole={deleteRole} />
+								<RolesTable />
 							</Grid>
 						</Grid>
 					</TabPanel>
