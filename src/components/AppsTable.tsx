@@ -52,7 +52,7 @@ const generateRolesGridRows = (roles: z.input<typeof roleSchema>[]) => {
 export function AppsTable() {
 	const queryClient = useQueryClient();
 	const { allApplications, setSelectedApplicationRowData, selectedApplicationRowData } = useApplicationStore();
-	const { setAllRoles } = useRoleStore();
+	const { setAllRoles, selectedRoleRowData, setSelectedRoleRowData } = useRoleStore();
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const [openRolesDialog, setOpenRolesDialog] = useState(false);
 	const [applicationForRoles, setApplicationForRoles] = useState<z.input<typeof maintainAppsSchema> | null>(null);
@@ -92,6 +92,10 @@ export function AppsTable() {
 		console.log("Editing application:", application);
 		setSelectedApplicationRowData(application);
 		setAllRoles(application.roles || []);
+		// also clear the RolesForm in case a role was selected
+		if (selectedRoleRowData) {
+			setSelectedRoleRowData(null);
+		}
 	};
 
 	const handleOpenDeleteDialog = (appId: string) => {

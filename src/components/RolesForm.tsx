@@ -2,11 +2,15 @@ import {
 	Box,
 	Button,
 	Checkbox,
+	Chip,
+	FormControl,
 	FormControlLabel,
 	FormGroup,
 	FormHelperText,
 	FormLabel,
 	Grid,
+	MenuItem,
+	Select,
 	TextField,
 } from "@mui/material";
 import { roleSchema } from "../schemas/maintain_apps";
@@ -35,7 +39,7 @@ interface RolesFormProps {
 }
 export function RolesForm({ appendRole }: RolesFormProps) {
 	const { setSelectedRoleRowData, selectedRoleRowData, setAllRoles, allRoles } = useRoleStore();
-	
+
 	const roleForm = useForm<z.input<typeof roleSchema>>({
 		resolver: zodResolver(roleSchema),
 		defaultValues: {
@@ -50,11 +54,11 @@ export function RolesForm({ appendRole }: RolesFormProps) {
 		handleSubmit,
 		control,
 		register,
-		formState: { errors, isValid},
+		formState: { errors, isValid },
 		trigger,
 		reset,
-		
-		
+
+
 	} = roleForm;
 
 	useEffect(() => {
@@ -62,7 +66,15 @@ export function RolesForm({ appendRole }: RolesFormProps) {
 			console.log("Resetting form with tempRole", selectedRoleRowData);
 			reset(selectedRoleRowData);
 		} else {
-			reset();
+			console.log("Resetting form with default values");
+			reset({
+				code: '',
+				name: '',
+				description: '',
+				accessType: [],
+				secureTo: []
+
+			});
 		}
 	}, [selectedRoleRowData, reset]);
 
@@ -99,7 +111,7 @@ export function RolesForm({ appendRole }: RolesFormProps) {
 	const resetForm = () => {
 		console.log("Resetting form with default values");
 		setSelectedRoleRowData(null);
-		
+
 		reset({
 			code: '',
 			name: '',
@@ -129,88 +141,71 @@ export function RolesForm({ appendRole }: RolesFormProps) {
 						{...register("name")}
 						error={!!errors.name}
 						helperText={errors.name?.message}
+						size="small"
 					/>
 					<TextField
 						label={"Description"}
 						{...register("description")}
 						error={!!errors.description}
 						helperText={errors.description?.message}
+						size="small"
 					/>
-					<FormLabel>Access Type</FormLabel>
-					<FormGroup
-						sx={{ display: "flex", flexDirection: "row", gap: 2 }}
-					>
-						{accessTypes.map((accessType) => (
-							<Controller
-								key={accessType.value}
-								control={control}
-								name="accessType"
-								render={({ field }) => {
-									const value = accessType.value as 'Supplier' | 'Employee' | 'Contingent';
-									const currentValues = Array.isArray(field.value)
-										? (field.value as Array<'Supplier' | 'Employee' | 'Contingent'>)
-										: [];
-									return (
-										<FormControlLabel
-											control={
-												<Checkbox
-													checked={currentValues.includes(value)}
-													onChange={(e) => {
-														if (e.target.checked) {
-															field.onChange([...currentValues, value]);
-														} else {
-															field.onChange(currentValues.filter((v) => v !== value));
-														}
-													}}
-												/>
-											}
-											label={accessType.label}
-										/>
-									);
-								}}
-							/>
-						))}
-					</FormGroup>
+					<FormControl>
+						<FormLabel>Access Type</FormLabel>
+						<Controller
+							control={control}
+							name="accessType"
+							render={({ field }) => {
+								return (
+									<Select
+										{...field}
+										multiple
+										size="small"
+										value={field.value}
+										renderValue={(selected) => (
+											<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+												{selected.map((value) => (
+													<Chip key={value} label={value} size="small" />
+												))}
+											</Box>
+										)}
+										onChange={(e) => field.onChange(e.target.value)}
+									>
+										{accessTypes.map((accessType) => (
+											<MenuItem key={accessType.value} value={accessType.value}>
+												{accessType.label}
+											</MenuItem>
+										))}
+									</Select>
+								);
+							}}
+						/>
+					</FormControl>
+					{errors.accessType && (
+						<FormHelperText>
+							{errors.accessType?.message}
+						</FormHelperText>
+					)}
+					<FormControl>
+						<FormLabel>Secure To</FormLabel>
+						<Controller
+							control={control}
+							name="secureTo"
+							render={({ field }) => {
+								return (
+									<Select {...field} multiple size="small" value={field.value} onChange={(e) => field.onChange(e.target.value)}>
+										{secureTo.map((secureTo) => (
+											<MenuItem key={secureTo.value} value={secureTo.value}>
+												{secureTo.label}
+											</MenuItem>
+										))}
+									</Select>
+								);
+							}}
+						/>
+					</FormControl>
 					<FormHelperText>
-						{errors.accessType?.message }
-					</FormHelperText>
-					<FormLabel>Secure To</FormLabel>
-					<FormGroup
-						sx={{ display: "flex", flexDirection: "row", gap: 2 }}
-					>
-						{secureTo.map((secureTo) => (
-							<Controller
-								key={secureTo.value}
-								control={control}
-								name="secureTo"
-								render={({ field }) => {
-									const value = secureTo.value as 'Employee' | 'Supplier';
-									const currentValues = Array.isArray(field.value)
-										? (field.value as Array<'Employee' | 'Supplier'>)
-										: [];
-									return (
-										<FormControlLabel
-											control={
-												<Checkbox
-													checked={currentValues.includes(value)}
-													onChange={(e) => {
-														if (e.target.checked) {
-															field.onChange([...currentValues, value]);
-														} else {
-															field.onChange(currentValues.filter((v) => v !== value));
-														}
-													}}
-												/>
-											}
-											label={secureTo.label}
-										/>
-									);
-								}}
-							/>
-						))}
-					</FormGroup>
-					<FormHelperText>
-						{errors.secureTo?.message }
+						{errors.secureTo?.message}
 					</FormHelperText>
 				</Grid>
 				<Grid

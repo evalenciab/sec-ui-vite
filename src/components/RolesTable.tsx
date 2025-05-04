@@ -36,7 +36,7 @@ export function RolesTable({ removeRole }: { removeRole: (roleIndex: number) => 
 	const [open, setOpen] = useState(false);
 	const [roleToDelete, setRoleToDelete] = useState<RoleInput | null>(null);
 	
-	const { setSelectedRoleRowData, allRoles, setAllRoles } = useRoleStore();
+	const { setSelectedRoleRowData, allRoles, setAllRoles, selectedRoleRowData } = useRoleStore();
 
 	const handleOpenDeleteDialog = (role: RoleInput) => {
 		setRoleToDelete(role);
@@ -55,6 +55,10 @@ export function RolesTable({ removeRole }: { removeRole: (roleIndex: number) => 
 			if (index !== -1) {
 				removeRole(index);
 				setAllRoles(allRoles.filter((r) => r.code !== roleToDelete.code));
+				// also clear the RolesForm in case a role was selected
+				if (selectedRoleRowData) {
+					setSelectedRoleRowData(null);
+				}
 			}
 		}
 		handleClose();
