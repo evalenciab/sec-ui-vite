@@ -12,11 +12,12 @@ import { useApplicationStore } from "../stores/application.store";
 import { AppsTable } from "../components/AppsTable";
 import { useRoleStore } from "../stores/roles.store";
 import { enqueueSnackbar } from "notistack";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { applicationService } from "../services/applicationService";
 
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
+	const queryClient = useQueryClient();
 	const {
 		setSelectedApplicationRowData,
 		selectedApplicationRowData,
@@ -26,16 +27,41 @@ export function MaintainApps() {
 	const { setSelectedRoleRowData, setAllRoles, allRoles } = useRoleStore();
 	const appForm = useForm<z.input<typeof maintainAppsSchema>>({
 		resolver: zodResolver(maintainAppsSchema),
+		defaultValues: {
+			appId: "",
+			appName: "",
+			appDescription: "",
+			deleteInactiveUsers: false,
+			retentionDays: undefined,
+			roles: [],
+		},
 	});
-	const { handleSubmit, reset } = appForm;
+	const { handleSubmit, reset, control } = appForm;
 	const { append, remove } = useFieldArray({
-		control: appForm.control,
+		control,
 		name: "roles",
 	});
 
 	const { data: fetchedApplications, isLoading, isError } = useQuery({
 		queryKey: ["applications"],
 		queryFn: applicationService.fetchApplications,
+	});
+
+	const createApplicationMutation = useMutation({
+		mutationFn: applicationService.createApplication,
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({ queryKey: ["applications"] });
+			enqueueSnackbar(`Application '${data.appName}' created successfully`, {
+				variant: "success",
+			});
+			clearForm();
+		},
+		onError: (error) => {
+			console.error("Error creating application:", error);
+			enqueueSnackbar(`Error creating application: ${error.message}`, {
+				variant: "error",
+			});
+		},
 	});
 
 	useEffect(() => {
@@ -47,10 +73,10 @@ export function MaintainApps() {
 	useEffect(() => {
 		if (selectedApplicationRowData) {
 			setAllRoles(selectedApplicationRowData.roles || []);
-		} else if (!isLoading && !isError && fetchedApplications && !selectedApplicationRowData) {
+		} else {
 			setAllRoles([]);
 		}
-	}, [selectedApplicationRowData, setAllRoles, fetchedApplications, isLoading, isError]);
+	}, [selectedApplicationRowData, setAllRoles]);
 
 	const totalRoles = useMemo(() => {
 		const currentRoles = selectedApplicationRowData?.roles || allRoles;
@@ -58,56 +84,40 @@ export function MaintainApps() {
 	}, [selectedApplicationRowData, allRoles]);
 
 	const onSubmit = (data: z.input<typeof maintainAppsSchema>) => {
-		console.log(data);
+		console.log("Submitting data:", data);
 		if (selectedApplicationRowData) {
+			console.log("Updating existing application (logic needs update):");
 			setAllApplications(
 				allApplications.map((app) =>
 					app.appId === selectedApplicationRowData.appId ? data : app
 				)
 			);
-			enqueueSnackbar("Application updated successfully", {
-				variant: "success",
+			enqueueSnackbar("Application updated (local state - needs API)", {
+				variant: "info",
 			});
+			setSelectedApplicationRowData(null);
+			reset();
+			setAllRoles([]);
 		} else {
-			if (allApplications.some((app) => app.appId === data.appId)) {
-				enqueueSnackbar("Application already exists", {
-					variant: "error",
-				});
-				return;
-			}
-			console.log("Creating new application");
-			console.log(`Role: ${JSON.stringify(data.roles)}`);
-			setAllApplications([...allApplications, data]);
-			enqueueSnackbar("Application created successfully", {
-				variant: "success",
-			});
+			console.log("Creating new application via mutation");
+			createApplicationMutation.mutate(data);
 		}
-		setSelectedApplicationRowData(null);
-		reset({
-			appId: "",
-			appName: "",
-			appDescription: "",
-			deleteInactiveUsers: false,
-			retentionDays: 0,
-			roles: [],
-		});
-		setSelectedRoleRowData(null);
-		setAllRoles([]);
 	};
 
 	const clearForm = () => {
 		setSelectedApplicationRowData(null);
 		setSelectedRoleRowData(null);
 		setAllRoles([]);
-		reset({
-			appId: "",
-			appName: "",
-			appDescription: "",
-			deleteInactiveUsers: false,
-			retentionDays: 0,
-			roles: [],
-		});
+		reset();
 	};
+
+	useEffect(() => {
+		if (selectedApplicationRowData) {
+			reset(selectedApplicationRowData);
+		} else {
+			reset();
+		}
+	}, [selectedApplicationRowData, reset]);
 
 	if (isLoading) {
 		return (
@@ -127,6 +137,12 @@ export function MaintainApps() {
 
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+			{createApplicationMutation.isPending && (
+				<Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', p: 1, backgroundColor: 'rgba(255, 255, 255, 0.8)', zIndex: 10 }}>
+					<CircularProgress size={20} sx={{ mr: 1 }} />
+					<Typography>Saving application...</Typography>
+				</Box>
+			)}
 			<Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
 				<TabContext value={tab}>
 					<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
