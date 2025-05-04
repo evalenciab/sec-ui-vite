@@ -15,6 +15,16 @@ import { enqueueSnackbar } from "notistack";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { applicationService } from "../services/applicationService";
 
+// Define default values shape based on schema input
+const defaultFormValues: z.input<typeof maintainAppsSchema> = {
+	appId: "",
+	appName: "",
+	appDescription: "",
+	deleteInactiveUsers: false,
+	retentionDays: undefined, // Match schema/preference
+	roles: [],
+};
+
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
 	const queryClient = useQueryClient();
@@ -27,14 +37,7 @@ export function MaintainApps() {
 	const { setSelectedRoleRowData, setAllRoles, allRoles } = useRoleStore();
 	const appForm = useForm<z.input<typeof maintainAppsSchema>>({
 		resolver: zodResolver(maintainAppsSchema),
-		defaultValues: {
-			appId: "",
-			appName: "",
-			appDescription: "",
-			deleteInactiveUsers: false,
-			retentionDays: undefined,
-			roles: [],
-		},
+		defaultValues: defaultFormValues, // Use the defined object
 	});
 	const { handleSubmit, reset, control } = appForm;
 	const { append, remove } = useFieldArray({
@@ -64,6 +67,23 @@ export function MaintainApps() {
 		},
 	});
 
+	const updateApplicationMutation = useMutation({
+		mutationFn: applicationService.updateApplication,
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({ queryKey: ["applications"] });
+			enqueueSnackbar(`Application '${data.appName}' updated successfully`, {
+				variant: "success",
+			});
+			clearForm();
+		},
+		onError: (error) => {
+			console.error("Error updating application:", error);
+			enqueueSnackbar(`Error updating application: ${error.message}`, {
+				variant: "error",
+			});
+		},
+	});
+
 	useEffect(() => {
 		if (fetchedApplications) {
 			setAllApplications(fetchedApplications);
@@ -86,18 +106,9 @@ export function MaintainApps() {
 	const onSubmit = (data: z.input<typeof maintainAppsSchema>) => {
 		console.log("Submitting data:", data);
 		if (selectedApplicationRowData) {
-			console.log("Updating existing application (logic needs update):");
-			setAllApplications(
-				allApplications.map((app) =>
-					app.appId === selectedApplicationRowData.appId ? data : app
-				)
-			);
-			enqueueSnackbar("Application updated (local state - needs API)", {
-				variant: "info",
-			});
-			setSelectedApplicationRowData(null);
-			reset();
-			setAllRoles([]);
+			console.log("Updating existing application via mutation");
+			const updateData = { ...data, appId: selectedApplicationRowData.appId };
+			updateApplicationMutation.mutate(updateData);
 		} else {
 			console.log("Creating new application via mutation");
 			createApplicationMutation.mutate(data);
@@ -108,14 +119,14 @@ export function MaintainApps() {
 		setSelectedApplicationRowData(null);
 		setSelectedRoleRowData(null);
 		setAllRoles([]);
-		reset();
+		reset(defaultFormValues);
 	};
 
 	useEffect(() => {
 		if (selectedApplicationRowData) {
 			reset(selectedApplicationRowData);
 		} else {
-			reset();
+			reset(defaultFormValues);
 		}
 	}, [selectedApplicationRowData, reset]);
 
@@ -137,7 +148,7 @@ export function MaintainApps() {
 
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-			{createApplicationMutation.isPending && (
+			{(createApplicationMutation.isPending || updateApplicationMutation.isPending) && (
 				<Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', p: 1, backgroundColor: 'rgba(255, 255, 255, 0.8)', zIndex: 10 }}>
 					<CircularProgress size={20} sx={{ mr: 1 }} />
 					<Typography>Saving application...</Typography>

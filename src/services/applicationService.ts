@@ -45,7 +45,30 @@ async function createApplication(newAppData: ApplicationInput): Promise<Applicat
    return appToAdd;
 }
 
+// Simulate an async API call to update (PUT)
+async function updateApplication(updatedAppData: ApplicationInput): Promise<ApplicationInput> {
+	// Simulate network delay
+	await new Promise(resolve => setTimeout(resolve, 500));
+
+	// Find the index of the application to update
+	const appIndex = mockApplications.findIndex(app => app.appId === updatedAppData.appId);
+
+	if (appIndex === -1) {
+		throw new Error(`Application with ID ${updatedAppData.appId} not found.`);
+	}
+
+	// In a real app, you'd send a PUT request to your API here.
+	// For now, we update it in our mock array.
+	mockApplications[appIndex] = updatedAppData;
+	console.log("Application updated:", updatedAppData);
+	console.log("Updated mock data:", mockApplications);
+
+	// Return the updated application data (API might return the updated object)
+	return updatedAppData;
+}
+
 export const applicationService = {
   fetchApplications,
   createApplication,
+  updateApplication,
 }; 
