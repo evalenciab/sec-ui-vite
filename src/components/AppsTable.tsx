@@ -3,8 +3,11 @@ import { useApplicationStore } from "../stores/application.store";
 import { maintainAppsSchema } from "../schemas/maintain_apps";
 import { z } from "zod";
 import { roleSchema } from "../schemas/maintain_apps";
-import { Button, Box, IconButton } from "@mui/material";
+import { Button, Box, IconButton, Dialog, DialogContentText, DialogContent, DialogTitle, DialogActions } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
+import { useState } from "react";
+import { enqueueSnackbar } from "notistack";
+
 interface ApplicationGridRow extends GridRowModel {
 	id: string;
 	appId: string;
@@ -34,16 +37,32 @@ const generateGridRows = (
 
 
 export function AppsTable() {
-	const { allApplications, setSelectedApplicationRowData } = useApplicationStore();
+	const { allApplications, setSelectedApplicationRowData, setAllApplications } = useApplicationStore();
+	const [open, setOpen] = useState(false);
+	const [appId, setAppId] = useState("");
 	const deleteApplication = (appId: string) => {
-		console.log(appId);
+		setAllApplications(allApplications.filter(app => app.appId !== appId));
+		setOpen(false);
+		setSelectedApplicationRowData({
+			appId: '',
+			appName: '',
+			appDescription: '',
+			deleteInactiveUsers: false,
+			retentionDays: 0,
+			roles: [],
+		});
+		enqueueSnackbar("Application deleted successfully", { variant: "success" });
 	};
 	
 	const editApplication = (application: z.input<typeof maintainAppsSchema>) => {
 		console.log(application);
 		setSelectedApplicationRowData(application);
 	};
-	
+	const handleOpenDeleteDialog = (appId: string) => {
+		setAppId(appId);
+		setOpen(true);
+	};
+
 	const columns: GridColDef<ApplicationGridRow>[] = [
 		{ field: "appId", headerName: "App ID", width: 100 },
 		{ field: "appName", headerName: "App Name", width: 200 },
@@ -78,7 +97,7 @@ export function AppsTable() {
 						<IconButton onClick={() => editApplication(params.row.originalApplication)}>
 							<Edit />
 						</IconButton>
-						<IconButton onClick={() => deleteApplication(params.row.appId)}>
+						<IconButton onClick={() => handleOpenDeleteDialog(params.row.appId)}>
 							<Delete />
 						</IconButton>
 					</Box>
@@ -87,5 +106,22 @@ export function AppsTable() {
 		},
 	];
 	const gridRows = generateGridRows(allApplications);
-	return <DataGrid rows={gridRows} columns={columns} density="compact" />;
+	return (
+		<>
+			<DataGrid rows={gridRows} columns={columns} density="compact" />
+			<Dialog open={open} onClose={() => setOpen(false)}>
+				<DialogTitle>Delete Application</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						Are you sure you want to delete this application?
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setOpen(false)}>Cancel</Button>
+					<Button onClick={() => deleteApplication(appId)}>Delete</Button>
+				</DialogActions>
+
+			</Dialog>
+		</>
+	);
 }

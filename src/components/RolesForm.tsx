@@ -62,7 +62,9 @@ export function RolesForm({ appendRole, clearForm }: RolesFormProps) {
 		if (selectedRoleRowData) {
 			console.log("Resetting form with tempRole", selectedRoleRowData);
 			reset(selectedRoleRowData);
-		} 
+		} else {
+			reset();
+		}
 	}, [selectedRoleRowData, reset]);
 
 	const onSubmit = () => {

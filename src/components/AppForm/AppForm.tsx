@@ -34,7 +34,7 @@ export function AppForm({
 			console.log(selectedApplicationRowData);	
 			reset(selectedApplicationRowData);
 			setAllRoles(selectedApplicationRowData.roles);
-		} 
+		}
 	}, [selectedApplicationRowData, reset]);
 	return (
 		<Grid container spacing={2}>
