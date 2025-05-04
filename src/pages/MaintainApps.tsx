@@ -26,6 +26,7 @@ import { RolesTable } from "../components/RolesTable";
 import { useApplicationStore } from "../stores/application.store";
 import { AppsTable } from "../components/AppsTable";
 import { useRoleStore } from "../stores/roles.store";
+import { enqueueSnackbar } from "notistack";
 
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
@@ -44,9 +45,18 @@ export function MaintainApps() {
 
 	const onSubmit = (data: z.input<typeof maintainAppsSchema>) => {
 		console.log(data);
-		// Handle form submission logic here (e.g., API call)
-		setAllApplications([...allApplications, data]);
-		// Reset the form to default values and clear the selected application row data
+		if (selectedApplicationRowData) {
+			// edit application
+			// update the app using the API instead of the local state
+			setAllApplications(allApplications.map(app => app.appId === selectedApplicationRowData.appId ? data : app));
+			// reset the form to default values and clear the selected application row data
+			enqueueSnackbar("Application updated successfully", { variant: "success" });
+		} else {
+			// Handle form submission logic here (e.g., API call)
+			setAllApplications([...allApplications, data]);
+			// Reset the form to default values and clear the selected application row data
+			enqueueSnackbar("Application created successfully", { variant: "success" });
+		}
 		setSelectedApplicationRowData(null);
 		reset(
 			{
@@ -56,7 +66,7 @@ export function MaintainApps() {
 				deleteInactiveUsers: false,
 				retentionDays: 0,
 				roles: [],
-					
+
 			}
 		);
 		// reset roles state
@@ -66,7 +76,7 @@ export function MaintainApps() {
 
 	const editRole = (role: z.input<typeof roleSchema>) => {
 		console.log(role);
-		
+
 		//setTempRole(role);
 	};
 

@@ -31,8 +31,19 @@ const generateGridRows = (
 	}));
 };
 
+
+
 export function AppsTable() {
-	const { allApplications } = useApplicationStore();
+	const { allApplications, setSelectedApplicationRowData } = useApplicationStore();
+	const deleteApplication = (appId: string) => {
+		console.log(appId);
+	};
+	
+	const editApplication = (application: z.input<typeof maintainAppsSchema>) => {
+		console.log(application);
+		setSelectedApplicationRowData(application);
+	};
+	
 	const columns: GridColDef<ApplicationGridRow>[] = [
 		{ field: "appId", headerName: "App ID", width: 100 },
 		{ field: "appName", headerName: "App Name", width: 200 },
@@ -64,10 +75,10 @@ export function AppsTable() {
 							alignItems: "center",
 						}}
 					>
-						<IconButton>
+						<IconButton onClick={() => editApplication(params.row.originalApplication)}>
 							<Edit />
 						</IconButton>
-						<IconButton>
+						<IconButton onClick={() => deleteApplication(params.row.appId)}>
 							<Delete />
 						</IconButton>
 					</Box>

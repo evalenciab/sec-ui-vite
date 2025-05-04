@@ -10,7 +10,9 @@ import {
 import { Controller, UseFormReturn } from "react-hook-form";
 import { maintainAppsSchema } from "../../schemas/maintain_apps";
 import { z } from "zod";
-
+import { useApplicationStore } from "../../stores/application.store";
+import { useEffect } from "react";
+import { useRoleStore } from "../../stores/roles.store";
 export function AppForm({
 	form,
 }: {
@@ -20,9 +22,20 @@ export function AppForm({
 		control,
 		register,
 		watch,
+		reset,
 		formState: { errors },
 	} = form;
 	const watchDeleteInactiveUsers = watch("deleteInactiveUsers");
+	const { setSelectedApplicationRowData, selectedApplicationRowData } = useApplicationStore();
+	const { setAllRoles, allRoles } = useRoleStore();
+	useEffect(() => {
+		if (selectedApplicationRowData) {
+			console.log("Resetting form with default values");
+			console.log(selectedApplicationRowData);	
+			reset(selectedApplicationRowData);
+			setAllRoles(selectedApplicationRowData.roles);
+		} 
+	}, [selectedApplicationRowData, reset]);
 	return (
 		<Grid container spacing={2}>
 			<Grid
