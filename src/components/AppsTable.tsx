@@ -3,11 +3,14 @@ import { useApplicationStore } from "../stores/application.store";
 import { maintainAppsSchema } from "../schemas/maintain_apps";
 import { z } from "zod";
 import { roleSchema } from "../schemas/maintain_apps";
-import { Button, Box, IconButton, Dialog, DialogContentText, DialogContent, DialogTitle, DialogActions } from "@mui/material";
+import { Button, Box, IconButton, Dialog, DialogContentText, DialogContent, DialogTitle, DialogActions, CircularProgress } from "@mui/material";
 import { Edit, Delete, Visibility } from "@mui/icons-material";
 import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { useRoleStore } from "../stores/roles.store";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { applicationService } from "../services/applicationService";
+
 interface ApplicationGridRow extends GridRowModel {
 	id: string;
 	appId: string;
@@ -46,47 +49,70 @@ const generateRolesGridRows = (roles: z.input<typeof roleSchema>[]) => {
 	}));
 };
 
-
-
-
 export function AppsTable() {
-	const { allApplications, setSelectedApplicationRowData, setAllApplications } = useApplicationStore();
-	const { setAllRoles, allRoles } = useRoleStore();
-	const [open, setOpen] = useState(false);
+	const queryClient = useQueryClient();
+	const { allApplications, setSelectedApplicationRowData, selectedApplicationRowData } = useApplicationStore();
+	const { setAllRoles } = useRoleStore();
+	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const [openRolesDialog, setOpenRolesDialog] = useState(false);
-	const [application, setApplication] = useState<z.input<typeof maintainAppsSchema> | null>(null);
-	const [appId, setAppId] = useState("");
-	
+	const [applicationForRoles, setApplicationForRoles] = useState<z.input<typeof maintainAppsSchema> | null>(null);
+	const [appIdToDelete, setAppIdToDelete] = useState<string | null>(null);
 
-	const deleteApplication = (appId: string) => {
-		setAllApplications(allApplications.filter(app => app.appId !== appId));
-		setOpen(false);
-		setSelectedApplicationRowData({
-			appId: '',
-			appName: '',
-			appDescription: '',
-			deleteInactiveUsers: false,
-			retentionDays: 0,
-			roles: [],
-		});
-		enqueueSnackbar("Application deleted successfully", { variant: "success" });
+	const deleteApplicationMutation = useMutation({
+		mutationFn: applicationService.deleteApplication,
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({ queryKey: ["applications"] });
+			enqueueSnackbar(`Application with ID ${data.appId} deleted successfully`, {
+				variant: "success",
+			});
+			setOpenDeleteDialog(false);
+			setAppIdToDelete(null);
+			if (selectedApplicationRowData?.appId === data.appId) {
+				setSelectedApplicationRowData(null);
+				setAllRoles([]);
+			}
+		},
+		onError: (error) => {
+			console.error("Error deleting application:", error);
+			enqueueSnackbar(`Error deleting application: ${error.message}`, {
+				variant: "error",
+			});
+			setOpenDeleteDialog(false);
+			setAppIdToDelete(null);
+		},
+	});
+
+	const handleDeleteConfirm = () => {
+		if (appIdToDelete) {
+			deleteApplicationMutation.mutate(appIdToDelete);
+		}
 	};
-	
+
 	const editApplication = (application: z.input<typeof maintainAppsSchema>) => {
-		console.log(application);
+		console.log("Editing application:", application);
 		setSelectedApplicationRowData(application);
-		setAllRoles(application.roles);
+		setAllRoles(application.roles || []);
 	};
+
 	const handleOpenDeleteDialog = (appId: string) => {
-		setAppId(appId);
-		setOpen(true);
+		setAppIdToDelete(appId);
+		setOpenDeleteDialog(true);
 	};
+
+	const handleCloseDeleteDialog = () => {
+		setOpenDeleteDialog(false);
+		setAppIdToDelete(null);
+	};
+
 	const handleOpenRolesDialog = (application: z.input<typeof maintainAppsSchema>) => {
-		console.log(application);
-		setApplication(application);
+		setApplicationForRoles(application);
 		setOpenRolesDialog(true);
 	};
-
+	
+	const handleCloseRolesDialog = () => {
+		setOpenRolesDialog(false);
+		setApplicationForRoles(null);
+	};
 
 	const columns: GridColDef<ApplicationGridRow>[] = [
 		{ field: "appId", headerName: "App ID", width: 100 },
@@ -126,7 +152,7 @@ export function AppsTable() {
 						<IconButton onClick={() => editApplication(params.row.originalApplication)}>
 							<Edit />
 						</IconButton>
-						<IconButton onClick={() => handleOpenDeleteDialog(params.row.appId)}>
+						<IconButton onClick={() => handleOpenDeleteDialog(params.row.appId)} disabled={deleteApplicationMutation.isPending}>
 							<Delete />
 						</IconButton>
 					</Box>
@@ -138,40 +164,52 @@ export function AppsTable() {
 		{ field: 'code', headerName: 'Code', width: 150 },
 		{ field: 'name', headerName: 'Name', width: 150 },
 		{ field: 'description', headerName: 'Description', width: 200 },
-		{ field: 'accessType', headerName: 'Access Type', width: 180 },
-		{ field: 'secureTo', headerName: 'Secure To', width: 180 },
+		{ field: 'accessType', headerName: 'Access Type', width: 180, valueGetter: (value: string[]) => value.join(', ') },
+		{ field: 'secureTo', headerName: 'Secure To', width: 180, valueGetter: (value: string[]) => value.join(', ') },
 	];
 	const gridRows = generateGridRows(allApplications);
 	return (
 		<>
-			<DataGrid rows={gridRows} columns={columns} density="compact" />
-			<Dialog open={open} onClose={() => setOpen(false)}>
+			<DataGrid rows={gridRows} columns={columns} density="compact" autoHeight />
+			<Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
 				<DialogTitle>Delete Application</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
-						Are you sure you want to delete this application?
+						Are you sure you want to delete application ID: {appIdToDelete}?
 					</DialogContentText>
+					{deleteApplicationMutation.isPending && (
+						<Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+							<CircularProgress />
+						</Box>
+					)}
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setOpen(false)}>Cancel</Button>
-					<Button onClick={() => deleteApplication(appId)}>Delete</Button>
+					<Button onClick={handleCloseDeleteDialog} disabled={deleteApplicationMutation.isPending}>
+						Cancel
+					</Button>
+					<Button onClick={handleDeleteConfirm} disabled={deleteApplicationMutation.isPending} color="error">
+						Delete
+					</Button>
 				</DialogActions>
-
 			</Dialog>
-			<Dialog open={openRolesDialog} onClose={() => setOpenRolesDialog(false)} maxWidth="xl" fullWidth>
-				<DialogTitle>Roles for {application?.appName}</DialogTitle>
+			<Dialog open={openRolesDialog} onClose={handleCloseRolesDialog} maxWidth="lg" fullWidth>
+				<DialogTitle>Roles for {applicationForRoles?.appName}</DialogTitle>
 				<DialogContent>
 					<DataGrid
-						rows={generateRolesGridRows(application?.roles || [])}
+						rows={generateRolesGridRows(applicationForRoles?.roles || [])}
 						columns={rolesColumns}
+						autoHeight
 						initialState={{
 							pagination: {
-								paginationModel: { page: 0, pageSize: 10 },
+								paginationModel: { page: 0, pageSize: 5 },
 							},
 						}}
-						pageSizeOptions={[10, 25, 50]}
+						pageSizeOptions={[5, 10, 25]}
 					/>
 				</DialogContent>
+				<DialogActions>
+					<Button onClick={handleCloseRolesDialog}>Close</Button>
+				</DialogActions>
 			</Dialog>
 		</>
 	);

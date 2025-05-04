@@ -67,8 +67,36 @@ async function updateApplication(updatedAppData: ApplicationInput): Promise<Appl
 	return updatedAppData;
 }
 
+// Simulate an async API call to delete
+async function deleteApplication(appId: string): Promise<{ success: boolean, appId: string }> {
+	// Simulate network delay
+	await new Promise(resolve => setTimeout(resolve, 500));
+
+	const initialLength = mockApplications.length;
+	const indexToRemove = mockApplications.findIndex(app => app.appId === appId);
+
+	if (indexToRemove === -1) {
+		throw new Error(`Application with ID ${appId} not found for deletion.`);
+	}
+
+	// In a real app, you'd send a DELETE request to your API here.
+	// For now, we remove it from our mock array using splice.
+	mockApplications.splice(indexToRemove, 1);
+
+	if (mockApplications.length === initialLength - 1) {
+		console.log(`Application with ID ${appId} deleted.`);
+		console.log("Updated mock data:", mockApplications);
+		// Return a success indicator and the ID
+		return { success: true, appId };
+	} else {
+		// Should not happen if findIndex was successful, but good to handle
+		throw new Error(`Failed to delete application with ID ${appId}.`);
+	}
+}
+
 export const applicationService = {
   fetchApplications,
   createApplication,
   updateApplication,
+  deleteApplication,
 }; 
