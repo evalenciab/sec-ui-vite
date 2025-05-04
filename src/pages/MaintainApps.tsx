@@ -18,7 +18,7 @@ import {
 	roleSchema,
 } from "../schemas/maintain_apps";
 import { z } from "zod";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AppForm } from "../components/AppForm/AppForm";
 import { RolesForm } from "../components/RolesForm";
@@ -39,6 +39,7 @@ export function MaintainApps() {
 	const {
 		setSelectedRoleRowData,
 		setAllRoles,
+		allRoles,
 	} = useRoleStore();
 	const appForm = useForm<z.input<typeof maintainAppsSchema>>({
 		resolver: zodResolver(maintainAppsSchema),
@@ -48,6 +49,10 @@ export function MaintainApps() {
 		control: appForm.control,
 		name: "roles",
 	});
+	
+	const totalRoles = useMemo(() => {
+		return allRoles.length;
+	}, [allRoles]);
 
 	//const watchDeleteInactiveUsers = watch("deleteInactiveUsers");
 
@@ -120,7 +125,7 @@ export function MaintainApps() {
 							aria-label="basic tabs example"
 						>
 							<Tab label="Application Settings" value={"1"} />
-							<Tab label="Roles" value={"2"} />
+							<Tab label={`Roles (${totalRoles})`} value={"2"} />
 						</TabList>
 					</Box>
 					<TabPanel value={"1"}>
