@@ -53,6 +53,11 @@ export function MaintainApps() {
 			enqueueSnackbar("Application updated successfully", { variant: "success" });
 		} else {
 			// Handle form submission logic here (e.g., API call)
+			// check if the application already exists
+			if (allApplications.some(app => app.appId === data.appId)) {
+				enqueueSnackbar("Application already exists", { variant: "error" });
+				return;
+			}
 			setAllApplications([...allApplications, data]);
 			// Reset the form to default values and clear the selected application row data
 			enqueueSnackbar("Application created successfully", { variant: "success" });
