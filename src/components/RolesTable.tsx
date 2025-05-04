@@ -32,7 +32,7 @@ const generateGridRows = (roles: RoleInput[]): RoleGridRow[] => {
 	}));
 };
 
-export function RolesTable() {
+export function RolesTable({ removeRole }: { removeRole: (roleIndex: number) => void }) {
 	const [open, setOpen] = useState(false);
 	const [roleToDelete, setRoleToDelete] = useState<RoleInput | null>(null);
 	
@@ -50,9 +50,12 @@ export function RolesTable() {
 
 	const handleDeleteConfirm = () => {
 		if (roleToDelete) {
-			//deleteRole(roleToDelete.code);
-			console.log(`Role to delete: ${roleToDelete.code}`);
-			setAllRoles(allRoles.filter((r) => r.code !== roleToDelete.code));
+			const index = allRoles.findIndex((r) => r.code === roleToDelete.code);
+			console.log(`Role to delete: ${roleToDelete.code} - index: ${index}`);
+			if (index !== -1) {
+				removeRole(index);
+				setAllRoles(allRoles.filter((r) => r.code !== roleToDelete.code));
+			}
 		}
 		handleClose();
 	};

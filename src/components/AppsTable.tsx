@@ -7,7 +7,7 @@ import { Button, Box, IconButton, Dialog, DialogContentText, DialogContent, Dial
 import { Edit, Delete, Visibility } from "@mui/icons-material";
 import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
-
+import { useRoleStore } from "../stores/roles.store";
 interface ApplicationGridRow extends GridRowModel {
 	id: string;
 	appId: string;
@@ -51,10 +51,13 @@ const generateRolesGridRows = (roles: z.input<typeof roleSchema>[]) => {
 
 export function AppsTable() {
 	const { allApplications, setSelectedApplicationRowData, setAllApplications } = useApplicationStore();
+	const { setAllRoles, allRoles } = useRoleStore();
 	const [open, setOpen] = useState(false);
 	const [openRolesDialog, setOpenRolesDialog] = useState(false);
 	const [application, setApplication] = useState<z.input<typeof maintainAppsSchema> | null>(null);
 	const [appId, setAppId] = useState("");
+	
+
 	const deleteApplication = (appId: string) => {
 		setAllApplications(allApplications.filter(app => app.appId !== appId));
 		setOpen(false);
@@ -72,6 +75,7 @@ export function AppsTable() {
 	const editApplication = (application: z.input<typeof maintainAppsSchema>) => {
 		console.log(application);
 		setSelectedApplicationRowData(application);
+		setAllRoles(application.roles);
 	};
 	const handleOpenDeleteDialog = (appId: string) => {
 		setAppId(appId);
