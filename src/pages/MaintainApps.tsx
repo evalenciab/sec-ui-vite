@@ -16,6 +16,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { applicationService } from "../services/applicationService";
 import { AppDialog } from "../components/AppDialog/AppDialog";
 import { useNavigate } from "react-router-dom";
+import { AppsGrid } from "../components/AppsGrid/AppsGrid";
 
 // Define default values shape based on schema input
 const defaultFormValues: z.input<typeof maintainAppsSchema> = {
@@ -267,50 +268,7 @@ export function MaintainApps() {
 					{viewMode === "table" ? (
 						<AppsTable deleteApplicationMutation={deleteApplicationMutation} />
 					) : (
-						<Grid container spacing={2}>
-							{allApplications.map((app) => (
-								<Grid size={{xs: 12, sm: 6, md: 4}} key={app.appId || app.appName}>
-									<Card>
-										<CardContent>
-											<Typography variant="h6" component="div">
-												{app.appName}
-											</Typography>
-											<Typography sx={{ mb: 1.5 }} color="text.secondary">
-												ID: {app.appId}
-											</Typography>
-											<Typography variant="body2" sx={{ mb: 1 }}>
-												{app.appDescription}
-											</Typography>
-											<Typography variant="body2" color="text.secondary">
-												Total Roles: {app.roles?.length || 0}
-											</Typography>
-										</CardContent>
-										<CardActions sx={{ alignContent: "flex-end", justifyContent: "flex-end" }}>
-											<Button
-												size="small"
-												variant="outlined"
-												disabled={deleteApplicationMutation.isPending}
-												onClick={() => {
-													if (app.appId) {
-														deleteApplicationMutation.mutate(app.appId);
-													}
-												}}
-											>
-												Delete
-											</Button>
-											<Button
-												size="small"
-												onClick={() => navigate(`/app-details/${app.appId}`)}
-												variant="contained"
-												disabled={deleteApplicationMutation.isPending}
-											>
-												View Details
-											</Button>
-										</CardActions>
-									</Card>
-								</Grid>
-							))}
-						</Grid>
+						<AppsGrid allApplications={allApplications} deleteApplicationMutation={deleteApplicationMutation} />
 					)}
 				</Grid>
 			</Grid>
