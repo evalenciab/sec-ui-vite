@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { applicationService } from "../services/applicationService";
-import { Box, Typography, CircularProgress, Paper, Grid, List, ListItem, ListItemText, Divider, Button, Fab } from "@mui/material";
+import { Box, Typography, CircularProgress, Paper, Grid, List, ListItem, ListItemText, Divider, Button, Fab, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { z } from "zod";
 import { maintainAppsSchema, roleSchema } from "../schemas/maintain_apps"; // Assuming roleSchema is here
@@ -11,6 +11,9 @@ import { ApplicationEditorDialog } from "../components/ApplicationEditorDialog/A
 import { AppUsersGrid } from "../components/AppUsersGrid/AppUsersGrid";
 import { mockUsers } from "../data/mock-users";
 import { Add } from "@mui/icons-material";
+import { UserForm } from "../components/UserForm/UserForm";
+import { UserFormData } from "../schemas/userSchema";
+import { IUser } from "../types/search";
 
 export function AppDetails() {
 	const { appId } = useParams<{ appId: string }>();
@@ -18,6 +21,10 @@ export function AppDetails() {
 
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [dialogTab, setDialogTab] = useState("1");
+
+	// State for UserForm Dialog
+	const [isUserFormOpen, setIsUserFormOpen] = useState(false);
+	const [editingUser, setEditingUser] = useState<IUser | null>(null);
 
 	const {
 		appForm,
@@ -63,6 +70,36 @@ export function AppDetails() {
 			setIsEditDialogOpen(false); // Close dialog on successful submission by hook
 			refetch(); // Refetch the application details to show updated data
 		});
+	};
+
+	// Handlers for UserForm Dialog
+	const handleOpenUserFormDialog = (user: IUser | null = null) => {
+		setEditingUser(user);
+		setIsUserFormOpen(true);
+	};
+
+	const handleCloseUserFormDialog = () => {
+		setIsUserFormOpen(false);
+		setEditingUser(null);
+	};
+
+	const handleUserFormSubmit = (data: UserFormData) => {
+		console.log("User form submitted:", data);
+		// Here you would typically call a service to save the user data
+		// For mock data, you might update the mockUsers array or a state variable
+		// For now, we just log and close
+		if (editingUser) {
+			// This is an edit
+			console.log("Updating user:", editingUser.id, data);
+		} else {
+			// This is a new user
+			console.log("Adding new user:", data);
+		}
+		// Example: Add to mockUsers (not ideal for real state management)
+		// const newUser = { ...data, lastAccess: data.lastAccess || new Date().toISOString(), addedAt: data.addedAt || new Date().toISOString(), addedBy: data.addedBy || 'SYSTEM' };
+		// mockUsers.push(newUser);
+		// refetchUsers(); // if users were fetched via useQuery
+		handleCloseUserFormDialog();
 	};
 
 	if (isLoading) {
@@ -143,11 +180,11 @@ export function AppDetails() {
 			</Grid>
 
 			<Divider sx={{ my: 2 }} />
-			<Box display="flex" flexDirection="row" justifyContent="space-between">
-				<Typography variant="h5" gutterBottom>
+			<Box display="flex" flexDirection="row" justifyContent="space-between" alignItems="center">
+				<Typography variant="h5" gutterBottom mb={0}>
 					{`Users (${mockUsers.length})`}
 				</Typography>
-				<Button variant="contained" color="primary" onClick={() => { }} startIcon={<Add />} size="small">
+				<Button variant="contained" color="primary" onClick={() => handleOpenUserFormDialog()} startIcon={<Add />} size="small">
 					Add User
 				</Button>
 			</Box>
@@ -178,6 +215,19 @@ export function AppDetails() {
 					onTabChange={(_, newTab) => setDialogTab(newTab)}
 				/>
 			)}
+
+			{/* Dialog for Adding/Editing User */}
+			<Dialog open={isUserFormOpen} onClose={handleCloseUserFormDialog} maxWidth="sm" fullWidth>
+				<DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
+				<DialogContent>
+					<UserForm 
+						initialData={editingUser}
+						onSubmit={handleUserFormSubmit}
+						onClose={handleCloseUserFormDialog}
+						isEditMode={!!editingUser}
+					/>
+				</DialogContent>
+			</Dialog>
 		</Paper>
 	);
 } 
