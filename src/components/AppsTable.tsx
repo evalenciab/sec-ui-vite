@@ -49,7 +49,12 @@ const generateRolesGridRows = (roles: z.input<typeof roleSchema>[]) => {
 	}));
 };
 
-export function AppsTable({ deleteApplicationMutation }: { deleteApplicationMutation: UseMutationResult<any, Error, string> }) {
+interface AppsTableProps {
+	deleteApplicationMutation: UseMutationResult<any, Error, string>;
+	onEdit?: (application: z.input<typeof maintainAppsSchema>) => void;
+}
+
+export function AppsTable({ deleteApplicationMutation, onEdit }: AppsTableProps) {
 	const queryClient = useQueryClient();
 	const { allApplications, setSelectedApplicationRowData, selectedApplicationRowData } = useApplicationStore();
 	const { setAllRoles, selectedRoleRowData, setSelectedRoleRowData } = useRoleStore();
@@ -57,30 +62,6 @@ export function AppsTable({ deleteApplicationMutation }: { deleteApplicationMuta
 	const [openRolesDialog, setOpenRolesDialog] = useState(false);
 	const [applicationForRoles, setApplicationForRoles] = useState<z.input<typeof maintainAppsSchema> | null>(null);
 	const [appIdToDelete, setAppIdToDelete] = useState<string | null>(null);
-
-	// const deleteApplicationMutation = useMutation({
-	// 	mutationFn: applicationService.deleteApplication,
-	// 	onSuccess: (data) => {
-	// 		queryClient.invalidateQueries({ queryKey: ["applications"] });
-	// 		enqueueSnackbar(`Application with ID ${data.appId} deleted successfully`, {
-	// 			variant: "success",
-	// 		});
-	// 		setOpenDeleteDialog(false);
-	// 		setAppIdToDelete(null);
-	// 		if (selectedApplicationRowData?.appId === data.appId) {
-	// 			setSelectedApplicationRowData(null);
-	// 			setAllRoles([]);
-	// 		}
-	// 	},
-	// 	onError: (error) => {
-	// 		console.error("Error deleting application:", error);
-	// 		enqueueSnackbar(`Error deleting application: ${error.message}`, {
-	// 			variant: "error",
-	// 		});
-	// 		setOpenDeleteDialog(false);
-	// 		setAppIdToDelete(null);
-	// 	},
-	// });
 
 	useEffect(() => {
 		if (deleteApplicationMutation.isSuccess) {
@@ -105,16 +86,6 @@ export function AppsTable({ deleteApplicationMutation }: { deleteApplicationMuta
 	const handleDeleteConfirm = () => {
 		if (appIdToDelete) {
 			deleteApplicationMutation.mutate(appIdToDelete);
-		}
-	};
-
-	const editApplication = (application: z.input<typeof maintainAppsSchema>) => {
-		console.log("Editing application:", application);
-		setSelectedApplicationRowData(application);
-		setAllRoles(application.roles || []);
-		// also clear the RolesForm in case a role was selected
-		if (selectedRoleRowData) {
-			setSelectedRoleRowData(null);
 		}
 	};
 
@@ -173,7 +144,11 @@ export function AppsTable({ deleteApplicationMutation }: { deleteApplicationMuta
 							alignItems: "center",
 						}}
 					>
-						<IconButton onClick={() => editApplication(params.row.originalApplication)}>
+						<IconButton onClick={() => {
+							if (onEdit) {
+								onEdit(params.row.originalApplication);
+							}
+						}}>
 							<Edit />
 						</IconButton>
 						<IconButton onClick={() => handleOpenDeleteDialog(params.row.appId)} disabled={deleteApplicationMutation.isPending}>
