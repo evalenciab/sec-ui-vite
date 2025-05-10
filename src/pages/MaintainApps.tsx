@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, Button, CircularProgress, Grid, Tab, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Grid, Tab, Typography, Switch, FormControlLabel, Card, CardContent, CardActions } from "@mui/material";
 import { useFieldArray, useForm } from "react-hook-form";
 import { maintainAppsSchema } from "../schemas/maintain_apps";
 import { z } from "zod";
@@ -15,6 +15,7 @@ import { enqueueSnackbar } from "notistack";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { applicationService } from "../services/applicationService";
 import { AppDialog } from "../components/AppDialog/AppDialog";
+import { useNavigate } from "react-router-dom";
 
 // Define default values shape based on schema input
 const defaultFormValues: z.input<typeof maintainAppsSchema> = {
@@ -46,6 +47,8 @@ export function MaintainApps() {
 		control,
 		name: "roles",
 	});
+	const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+	const navigate = useNavigate();
 
 	const { data: fetchedApplications, isLoading, isError } = useQuery({
 		queryKey: ["applications"],
@@ -154,6 +157,10 @@ export function MaintainApps() {
 		}
 	}, [selectedApplicationRowData, reset]);
 
+	const handleViewModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setViewMode(event.target.checked ? "cards" : "table");
+	};
+
 	if (isLoading) {
 		return (
 			<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
@@ -178,8 +185,21 @@ export function MaintainApps() {
 					<Typography>Saving application...</Typography>
 				</Box>
 			)}
-			<Grid container spacing={2}>
-				<Grid size={12} sx={{ display: "flex", justifyContent: "flex-end" }}>
+			<Grid container spacing={2} sx={{ alignItems: "center" }}>
+				<Grid size={{xs: 6}}>
+					<FormControlLabel
+						control={
+							<Switch
+								checked={viewMode === "cards"}
+								onChange={handleViewModeChange}
+								name="viewModeSwitch"
+								color="primary"
+							/>
+						}
+						label="Card View"
+					/>
+				</Grid>
+				<Grid size={{xs: 6}} sx={{ display: "flex", justifyContent: "flex-end" }}>
 					<Button variant="contained" color="primary" size="small" onClick={() => setOpenCreateAppDialog(true)}>
 						Create Application
 					</Button>
@@ -226,8 +246,41 @@ export function MaintainApps() {
 			</Grid>
 
 			<Grid container spacing={2}>
-				<Grid size={12}>
-					<AppsTable />
+				<Grid size={{xs: 12}}>
+					{viewMode === "table" ? (
+						<AppsTable />
+					) : (
+						<Grid container spacing={2}>
+							{allApplications.map((app) => (
+								<Grid size={{xs: 12, sm: 6, md: 4}} key={app.appId || app.appName}>
+									<Card>
+										<CardContent>
+											<Typography variant="h6" component="div">
+												{app.appName}
+											</Typography>
+											<Typography sx={{ mb: 1.5 }} color="text.secondary">
+												ID: {app.appId}
+											</Typography>
+											<Typography variant="body2" sx={{ mb: 1 }}>
+												{app.appDescription}
+											</Typography>
+											<Typography variant="body2" color="text.secondary">
+												Total Roles: {app.roles?.length || 0}
+											</Typography>
+										</CardContent>
+										<CardActions>
+											<Button
+												size="small"
+												onClick={() => navigate(`/app-details/${app.appId}`)}
+											>
+												View Details
+											</Button>
+										</CardActions>
+									</Card>
+								</Grid>
+							))}
+						</Grid>
+					)}
 				</Grid>
 			</Grid>
 		</Box>
