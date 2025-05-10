@@ -10,6 +10,7 @@ import { useAppManagement } from "../hooks/useAppManagement";
 import { ApplicationEditorDialog } from "../components/ApplicationEditorDialog/ApplicationEditorDialog";
 import { AppUsersGrid } from "../components/AppUsersGrid/AppUsersGrid";
 import { mockUsers } from "../data/mock-users";
+import { Add } from "@mui/icons-material";
 
 export function AppDetails() {
 	const { appId } = useParams<{ appId: string }>();
@@ -142,19 +143,25 @@ export function AppDetails() {
 			</Grid>
 
 			<Divider sx={{ my: 2 }} />
-			<Typography variant="h5" gutterBottom>
-				{`Users (${mockUsers.length})`}
-			</Typography>
+			<Box display="flex" flexDirection="row" justifyContent="space-between">
+				<Typography variant="h5" gutterBottom>
+					{`Users (${mockUsers.length})`}
+				</Typography>
+				<Button variant="contained" color="primary" onClick={() => { }} startIcon={<Add />} size="small">
+					Add User
+				</Button>
+			</Box>
+			<Divider sx={{ my: 2 }} />
 			<AppUsersGrid users={mockUsers} />
-			<Fab 
-				color="primary" 
+			<Fab
+				color="primary"
 				aria-label="edit"
 				sx={{ position: 'fixed', bottom: 16, right: 16 }}
 				onClick={handleOpenEditDialog}
 				disabled={!application || isSubmittingApplication}
 			>
-        		<EditIcon />
-      		</Fab>
+				<EditIcon />
+			</Fab>
 
 			{isEditDialogOpen && (
 				<ApplicationEditorDialog
