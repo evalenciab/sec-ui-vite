@@ -5,10 +5,10 @@ import { z } from "zod";
 import { roleSchema } from "../schemas/maintain_apps";
 import { Button, Box, IconButton, Dialog, DialogContentText, DialogContent, DialogTitle, DialogActions, CircularProgress } from "@mui/material";
 import { Edit, Delete, Visibility } from "@mui/icons-material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { useRoleStore } from "../stores/roles.store";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, UseMutationResult, useQueryClient } from "@tanstack/react-query";
 import { applicationService } from "../services/applicationService";
 
 interface ApplicationGridRow extends GridRowModel {
@@ -49,7 +49,7 @@ const generateRolesGridRows = (roles: z.input<typeof roleSchema>[]) => {
 	}));
 };
 
-export function AppsTable() {
+export function AppsTable({ deleteApplicationMutation }: { deleteApplicationMutation: UseMutationResult<any, Error, string> }) {
 	const queryClient = useQueryClient();
 	const { allApplications, setSelectedApplicationRowData, selectedApplicationRowData } = useApplicationStore();
 	const { setAllRoles, selectedRoleRowData, setSelectedRoleRowData } = useRoleStore();
@@ -58,29 +58,49 @@ export function AppsTable() {
 	const [applicationForRoles, setApplicationForRoles] = useState<z.input<typeof maintainAppsSchema> | null>(null);
 	const [appIdToDelete, setAppIdToDelete] = useState<string | null>(null);
 
-	const deleteApplicationMutation = useMutation({
-		mutationFn: applicationService.deleteApplication,
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["applications"] });
-			enqueueSnackbar(`Application with ID ${data.appId} deleted successfully`, {
-				variant: "success",
-			});
+	// const deleteApplicationMutation = useMutation({
+	// 	mutationFn: applicationService.deleteApplication,
+	// 	onSuccess: (data) => {
+	// 		queryClient.invalidateQueries({ queryKey: ["applications"] });
+	// 		enqueueSnackbar(`Application with ID ${data.appId} deleted successfully`, {
+	// 			variant: "success",
+	// 		});
+	// 		setOpenDeleteDialog(false);
+	// 		setAppIdToDelete(null);
+	// 		if (selectedApplicationRowData?.appId === data.appId) {
+	// 			setSelectedApplicationRowData(null);
+	// 			setAllRoles([]);
+	// 		}
+	// 	},
+	// 	onError: (error) => {
+	// 		console.error("Error deleting application:", error);
+	// 		enqueueSnackbar(`Error deleting application: ${error.message}`, {
+	// 			variant: "error",
+	// 		});
+	// 		setOpenDeleteDialog(false);
+	// 		setAppIdToDelete(null);
+	// 	},
+	// });
+
+	useEffect(() => {
+		if (deleteApplicationMutation.isSuccess) {
+			console.log('success, do more stuff')
 			setOpenDeleteDialog(false);
 			setAppIdToDelete(null);
-			if (selectedApplicationRowData?.appId === data.appId) {
+			if (selectedApplicationRowData?.appId === appIdToDelete) {
 				setSelectedApplicationRowData(null);
 				setAllRoles([]);
 			}
-		},
-		onError: (error) => {
-			console.error("Error deleting application:", error);
-			enqueueSnackbar(`Error deleting application: ${error.message}`, {
-				variant: "error",
-			});
+		}
+	}, [deleteApplicationMutation.isSuccess]);
+	
+	useEffect(() => {
+		if (deleteApplicationMutation.isError) {
+			console.log('error')
 			setOpenDeleteDialog(false);
 			setAppIdToDelete(null);
-		},
-	});
+		}
+	}, [deleteApplicationMutation.isError]);
 
 	const handleDeleteConfirm = () => {
 		if (appIdToDelete) {

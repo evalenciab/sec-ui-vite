@@ -7,6 +7,8 @@ interface ApplicationState {
 	setSelectedApplicationRowData: (data: z.input<typeof maintainAppsSchema> | null) => void;
 	allApplications: z.input<typeof maintainAppsSchema>[];
 	setAllApplications: (data: z.input<typeof maintainAppsSchema>[]) => void;
+	viewMode: "table" | "cards";
+	setViewMode: (mode: "table" | "cards") => void;
 }
 
 export const useApplicationStore = create<ApplicationState>((set) => ({
@@ -14,4 +16,6 @@ export const useApplicationStore = create<ApplicationState>((set) => ({
 	setSelectedApplicationRowData: (data) => set({ selectedApplicationRowData: data }),
 	allApplications: [],
 	setAllApplications: (data) => set({ allApplications: data }),
+	viewMode: "table",
+	setViewMode: (mode) => set({ viewMode: mode }),
 }));

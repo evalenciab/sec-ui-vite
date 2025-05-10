@@ -36,6 +36,8 @@ export function MaintainApps() {
 		selectedApplicationRowData,
 		setAllApplications,
 		allApplications,
+		viewMode,
+		setViewMode,
 	} = useApplicationStore();
 	const { setSelectedRoleRowData, setAllRoles, allRoles } = useRoleStore();
 	const appForm = useForm<z.input<typeof maintainAppsSchema>>({
@@ -47,7 +49,6 @@ export function MaintainApps() {
 		control,
 		name: "roles",
 	});
-	const [viewMode, setViewMode] = useState<"table" | "cards">("table");
 	const navigate = useNavigate();
 
 	const { data: fetchedApplications, isLoading, isError } = useQuery({
@@ -84,6 +85,22 @@ export function MaintainApps() {
 		onError: (error) => {
 			console.error("Error updating application:", error);
 			enqueueSnackbar(`Error updating application: ${error.message}`, {
+				variant: "error",
+			});
+		},
+	});
+
+	const deleteApplicationMutation = useMutation({
+		mutationFn: applicationService.deleteApplication,
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({ queryKey: ["applications"] });
+			enqueueSnackbar(`Application with ID ${data.appId} deleted successfully`, {
+				variant: "success",
+			});
+		},
+		onError: (error) => {
+			console.error("Error deleting application:", error);
+			enqueueSnackbar(`Error deleting application: ${error.message}`, {
 				variant: "error",
 			});
 		},
@@ -248,7 +265,7 @@ export function MaintainApps() {
 			<Grid container spacing={2}>
 				<Grid size={{xs: 12}}>
 					{viewMode === "table" ? (
-						<AppsTable />
+						<AppsTable deleteApplicationMutation={deleteApplicationMutation} />
 					) : (
 						<Grid container spacing={2}>
 							{allApplications.map((app) => (
@@ -268,10 +285,24 @@ export function MaintainApps() {
 												Total Roles: {app.roles?.length || 0}
 											</Typography>
 										</CardContent>
-										<CardActions>
+										<CardActions sx={{ alignContent: "flex-end", justifyContent: "flex-end" }}>
+											<Button
+												size="small"
+												variant="outlined"
+												disabled={deleteApplicationMutation.isPending}
+												onClick={() => {
+													if (app.appId) {
+														deleteApplicationMutation.mutate(app.appId);
+													}
+												}}
+											>
+												Delete
+											</Button>
 											<Button
 												size="small"
 												onClick={() => navigate(`/app-details/${app.appId}`)}
+												variant="contained"
+												disabled={deleteApplicationMutation.isPending}
 											>
 												View Details
 											</Button>
