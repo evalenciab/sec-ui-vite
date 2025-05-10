@@ -6,6 +6,8 @@ import { UserAccessHistory } from './pages/UserAccessHistory'
 import { RequestAccess } from './pages/RequestAccess'
 import { MaintainApps } from './pages/MaintainApps'
 import { Dashboard } from './pages/Dashboard'
+import { AppDetails } from './pages/AppDetails'
+
 function App() {
 
   return (
@@ -29,6 +31,8 @@ function App() {
 		  <Route path="maintainApps">
 			<Route index element={<MaintainApps />} />
 		  </Route>
+		  {/* App Details Route */}
+		  <Route path="app-details/:appId" element={<AppDetails />} />
 
           {/* 404 Not Found */}
           <Route path="*" element={<div>404 Not Found</div>} />

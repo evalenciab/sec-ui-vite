@@ -94,9 +94,26 @@ async function deleteApplication(appId: string): Promise<{ success: boolean, app
 	}
 }
 
+// Simulate an async API call to fetch a single application by ID
+async function fetchApplicationById(appId: string): Promise<ApplicationInput> {
+	// Simulate network delay
+	await new Promise(resolve => setTimeout(resolve, 500));
+
+	const application = mockApplications.find(app => app.appId === appId);
+
+	if (!application) {
+		throw new Error(`Application with ID ${appId} not found.`);
+	}
+
+	// In a real app, you would fetch data from an API endpoint here.
+	// For now, we return the mock data.
+	return { ...application }; // Return a copy to prevent direct mutation of mock data
+}
+
 export const applicationService = {
   fetchApplications,
   createApplication,
   updateApplication,
   deleteApplication,
+  fetchApplicationById,
 }; 
