@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { AppsGrid } from "../components/AppsGrid/AppsGrid";
 import { useAppManagement } from "../hooks/useAppManagement";
 import { maintainAppsSchema } from "../schemas/maintain_apps";
+import { ApplicationEditorDialog } from "../components/ApplicationEditorDialog/ApplicationEditorDialog";
 
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
@@ -105,40 +106,19 @@ export function MaintainApps() {
 					}}>
 						Create Application
 					</Button>
-					<AppDialog
-						title={selectedApplication ? "Edit Application" : "Create Application"}
+					<ApplicationEditorDialog
 						open={openCreateAppDialog}
 						onClose={handleClearDialogAndForm}
 						onSave={handleSubmitDialog}
-					>
-						<Box component="form" noValidate>
-							<TabContext value={tab}>
-								<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-									<TabList
-										onChange={(_, newValue) => setTab(newValue)}
-										aria-label="basic tabs example"
-									>
-										<Tab label="Application Settings" value={"1"} />
-										<Tab label={`Roles (${totalRoles})`} value={"2"} />
-									</TabList>
-								</Box>
-								<TabPanel value={"1"}>
-									<AppForm form={appForm} />
-								</TabPanel>
-								<TabPanel value={"2"}>
-									<Grid container spacing={2}>
-										<Grid size={4}>
-											<RolesForm appendRole={appendRoleToForm} />
-										</Grid>
-										<Grid size={8}>
-											<RolesTable removeRole={removeRoleFromForm} />
-										</Grid>
-									</Grid>
-								</TabPanel>
-							</TabContext>
-
-						</Box>
-					</AppDialog>
+						dialogTitle={selectedApplication ? "Edit Application" : "Create Application"}
+						appForm={appForm}
+						appendRoleToForm={appendRoleToForm}
+						removeRoleFromForm={removeRoleFromForm}
+						control={control}
+						totalRoles={totalRoles}
+						currentTab={tab}
+						onTabChange={(_, newTab) => setTab(newTab)}
+					/>
 				</Grid>
 			</Grid>
 

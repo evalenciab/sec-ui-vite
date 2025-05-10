@@ -1,14 +1,34 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { applicationService } from "../services/applicationService";
-import { Box, Typography, CircularProgress, Paper, Grid, List, ListItem, ListItemText, Divider } from "@mui/material";
+import { Box, Typography, CircularProgress, Paper, Grid, List, ListItem, ListItemText, Divider, Button, Fab } from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
 import { z } from "zod";
 import { maintainAppsSchema, roleSchema } from "../schemas/maintain_apps"; // Assuming roleSchema is here
+import { useState, useMemo } from "react";
+import { useAppManagement } from "../hooks/useAppManagement";
+import { ApplicationEditorDialog } from "../components/ApplicationEditorDialog/ApplicationEditorDialog";
 
 export function AppDetails() {
 	const { appId } = useParams<{ appId: string }>();
+	const navigate = useNavigate(); // For potential navigation after edit, though not used here
 
-	const { data: application, isLoading, isError, error } = useQuery<z.input<typeof maintainAppsSchema>, Error>({
+	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+	const [dialogTab, setDialogTab] = useState("1");
+
+	const {
+		appForm,
+		control,
+		appendRoleToForm,
+		removeRoleFromForm,
+		submitApplicationForm,
+		handleSetSelectedApplication,
+		handleClearSelectionAndForm,
+		selectedApplication, // To determine if the dialog should be in "Edit" mode title
+		isSubmittingApplication,
+	} = useAppManagement();
+
+	const { data: application, isLoading, isError, error, refetch } = useQuery<z.input<typeof maintainAppsSchema>, Error>({
 		queryKey: ["application", appId],
 		queryFn: () => {
 			if (!appId) {
@@ -18,6 +38,29 @@ export function AppDetails() {
 		},
 		enabled: !!appId, // Only run query if appId is available
 	});
+
+	const watchedRoles = appForm.watch('roles', application?.roles || []);
+	const totalRolesForDialog = useMemo(() => watchedRoles.length, [watchedRoles]);
+
+	const handleOpenEditDialog = () => {
+		if (application) {
+			handleSetSelectedApplication(application); // Load current app data into the form
+			setIsEditDialogOpen(true);
+			setDialogTab("1");
+		}
+	};
+
+	const handleCloseEditDialog = () => {
+		handleClearSelectionAndForm(); // Clear form and selection state in the hook
+		setIsEditDialogOpen(false);
+	};
+
+	const handleSaveEditDialog = () => {
+		submitApplicationForm(() => {
+			setIsEditDialogOpen(false); // Close dialog on successful submission by hook
+			refetch(); // Refetch the application details to show updated data
+		});
+	};
 
 	if (isLoading) {
 		return (
@@ -95,6 +138,31 @@ export function AppDetails() {
 					)}
 				</Grid>
 			</Grid>
+			<Fab 
+				color="primary" 
+				aria-label="edit"
+				sx={{ position: 'fixed', bottom: 16, right: 16 }}
+				onClick={handleOpenEditDialog}
+				disabled={!application || isSubmittingApplication}
+			>
+        		<EditIcon />
+      		</Fab>
+
+			{isEditDialogOpen && (
+				<ApplicationEditorDialog
+					open={isEditDialogOpen}
+					onClose={handleCloseEditDialog}
+					onSave={handleSaveEditDialog}
+					dialogTitle={selectedApplication ? "Edit Application" : "Application Details Error"} // Should always be "Edit Application"
+					appForm={appForm}
+					appendRoleToForm={appendRoleToForm}
+					removeRoleFromForm={removeRoleFromForm}
+					control={control}
+					totalRoles={totalRolesForDialog}
+					currentTab={dialogTab}
+					onTabChange={(_, newTab) => setDialogTab(newTab)}
+				/>
+			)}
 		</Paper>
 	);
 } 
