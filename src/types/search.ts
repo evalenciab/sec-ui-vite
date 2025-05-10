@@ -26,3 +26,14 @@ export interface IRequestAccessFormInput {
     accessType: string;
 	comment: string;
 }
+
+export interface IUser {
+    id: string;
+    name: string;
+    email: string;
+    roles: string[];
+    lastAccess: string;
+    addedBy: string;
+    addedAt: string;
+}
+

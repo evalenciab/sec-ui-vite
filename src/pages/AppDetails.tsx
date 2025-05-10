@@ -8,6 +8,8 @@ import { maintainAppsSchema, roleSchema } from "../schemas/maintain_apps"; // As
 import { useState, useMemo } from "react";
 import { useAppManagement } from "../hooks/useAppManagement";
 import { ApplicationEditorDialog } from "../components/ApplicationEditorDialog/ApplicationEditorDialog";
+import { AppUsersGrid } from "../components/AppUsersGrid/AppUsersGrid";
+import { mockUsers } from "../data/mock-users";
 
 export function AppDetails() {
 	const { appId } = useParams<{ appId: string }>();
@@ -138,6 +140,12 @@ export function AppDetails() {
 					)}
 				</Grid>
 			</Grid>
+
+			<Divider sx={{ my: 2 }} />
+			<Typography variant="h5" gutterBottom>
+				{`Users (${mockUsers.length})`}
+			</Typography>
+			<AppUsersGrid users={mockUsers} />
 			<Fab 
 				color="primary" 
 				aria-label="edit"
