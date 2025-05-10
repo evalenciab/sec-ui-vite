@@ -14,6 +14,7 @@ import { useRoleStore } from "../stores/roles.store";
 import { enqueueSnackbar } from "notistack";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { applicationService } from "../services/applicationService";
+import { AppDialog } from "../components/AppDialog/AppDialog";
 
 // Define default values shape based on schema input
 const defaultFormValues: z.input<typeof maintainAppsSchema> = {
@@ -27,6 +28,7 @@ const defaultFormValues: z.input<typeof maintainAppsSchema> = {
 
 export function MaintainApps() {
 	const [tab, setTab] = useState("1");
+	const [openCreateAppDialog, setOpenCreateAppDialog] = useState(false);
 	const queryClient = useQueryClient();
 	const {
 		setSelectedApplicationRowData,
@@ -39,7 +41,7 @@ export function MaintainApps() {
 		resolver: zodResolver(maintainAppsSchema),
 		defaultValues: defaultFormValues, // Use the defined object
 	});
-	const { handleSubmit, reset, control } = appForm;
+	const { handleSubmit, reset, control, trigger } = appForm;
 	const { append, remove } = useFieldArray({
 		control,
 		name: "roles",
@@ -115,11 +117,33 @@ export function MaintainApps() {
 		}
 	};
 
+	const onSubmitDialog = () => {
+		trigger();
+		if (appForm.formState.isValid) {
+			const data = appForm.getValues();
+			console.log("Submitting data:", data);
+			if (selectedApplicationRowData) {
+				console.log("Updating existing application via mutation");
+				const updateData = { ...data, appId: selectedApplicationRowData.appId };
+				updateApplicationMutation.mutate(updateData);
+			} else {
+				console.log("Creating new application via mutation");
+				createApplicationMutation.mutate(data);
+			}
+		} else {
+			enqueueSnackbar("Please fill in all required fields", {
+				variant: "error",
+			});
+		}
+	};
+
 	const clearForm = () => {
+		setTab("1");
 		setSelectedApplicationRowData(null);
 		setSelectedRoleRowData(null);
 		setAllRoles([]);
 		reset(defaultFormValues);
+		setOpenCreateAppDialog(false);
 	};
 
 	useEffect(() => {
@@ -154,55 +178,53 @@ export function MaintainApps() {
 					<Typography>Saving application...</Typography>
 				</Box>
 			)}
-			<Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-				<TabContext value={tab}>
-					<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-						<TabList
-							onChange={(_, newValue) => setTab(newValue)}
-							aria-label="basic tabs example"
-						>
-							<Tab label="Application Settings" value={"1"} />
-							<Tab label={`Roles (${totalRoles})`} value={"2"} />
-						</TabList>
-					</Box>
-					<TabPanel value={"1"}>
-						<AppForm form={appForm} />
-					</TabPanel>
-					<TabPanel value={"2"}>
-						<Grid container spacing={2}>
-							<Grid size={4}>
-								<RolesForm appendRole={append} />
-							</Grid>
-							<Grid size={8}>
-								<RolesTable removeRole={remove} />
-							</Grid>
-						</Grid>
-					</TabPanel>
-				</TabContext>
-				<Grid
-					size={12}
-					sx={{ display: "flex", justifyContent: "center", gap: 2 }}
-				>
-					<Button
-						variant="contained"
-						color="secondary"
-						size="small"
-						onClick={() => {
+			<Grid container spacing={2}>
+				<Grid size={12} sx={{ display: "flex", justifyContent: "flex-end" }}>
+					<Button variant="contained" color="primary" size="small" onClick={() => setOpenCreateAppDialog(true)}>
+						Create Application
+					</Button>
+					<AppDialog
+						title="Create Application"
+						open={openCreateAppDialog}
+						onClose={() => {
+							setOpenCreateAppDialog(false);
 							clearForm();
 						}}
+						onSave={() => {
+							onSubmitDialog();
+						}}
 					>
-						Cancel
-					</Button>
-					<Button
-						type="submit"
-						variant="contained"
-						color="primary"
-						size="small"
-					>
-						Save Settings
-					</Button>
+						<Box component="form" noValidate>
+							<TabContext value={tab}>
+								<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+									<TabList
+										onChange={(_, newValue) => setTab(newValue)}
+										aria-label="basic tabs example"
+									>
+										<Tab label="Application Settings" value={"1"} />
+										<Tab label={`Roles (${totalRoles})`} value={"2"} />
+									</TabList>
+								</Box>
+								<TabPanel value={"1"}>
+									<AppForm form={appForm} />
+								</TabPanel>
+								<TabPanel value={"2"}>
+									<Grid container spacing={2}>
+										<Grid size={4}>
+											<RolesForm appendRole={append} />
+										</Grid>
+										<Grid size={8}>
+											<RolesTable removeRole={remove} />
+										</Grid>
+									</Grid>
+								</TabPanel>
+							</TabContext>
+
+						</Box>
+					</AppDialog>
 				</Grid>
-			</Box>
+			</Grid>
+
 			<Grid container spacing={2}>
 				<Grid size={12}>
 					<AppsTable />
