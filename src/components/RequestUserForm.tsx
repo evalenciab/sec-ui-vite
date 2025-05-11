@@ -12,12 +12,15 @@ import {
 	DialogActions,
 	Button,
 	FormHelperText,
+	CircularProgress,
 } from "@mui/material";
-import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { requestUserSchema } from "../schemas/request.schema";
 import { z } from "zod";
+import { applicationService } from "../services/applicationService";
+import { maintainAppsSchema } from "../schemas/maintain_apps";
+import { useQuery } from "@tanstack/react-query";
 
 interface RequestUserFormProps {
 	appId?: string | null;
@@ -49,6 +52,25 @@ export function RequestUserForm({
 	handleCloseRequestAccessDialog,
 }: RequestUserFormProps) {
 	const {
+		data: application,
+		isLoading: isLoadingApp,
+		error: errorApp,
+
+	} = useQuery({
+		queryKey: ["application", appId ],
+		queryFn: () => {
+			if (!appId) {
+				// Or throw an error, or return a specific object indicating no appId
+				return Promise.resolve(null); 
+			}
+			return applicationService.fetchApplicationById(appId);
+		},
+		enabled: !!appId, // Only run the query if appId is present
+		refetchOnWindowFocus: 'always',
+		staleTime: 0,
+	});
+
+	const {
 		control,
 		register,
 		handleSubmit,
@@ -63,6 +85,7 @@ export function RequestUserForm({
 			reason: "",
 		},
 	});
+	
 	const onSubmit = (data: any) => {
 		console.log(data);
 	};
@@ -77,7 +100,11 @@ export function RequestUserForm({
 			fullWidth
 			maxWidth="sm"
 		>
-			<DialogTitle>Request Access</DialogTitle>
+			<DialogTitle>
+				{isLoadingApp && <CircularProgress size={20} />}
+				{errorApp && `Error: ${errorApp.message}`}
+				{!isLoadingApp && !errorApp && application && `Request Access for ${application.appName}`}
+			</DialogTitle>
 			<DialogContent>
 				<Box
 					component="form"

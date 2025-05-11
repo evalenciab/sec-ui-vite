@@ -96,6 +96,7 @@ async function deleteApplication(appId: string): Promise<{ success: boolean, app
 
 // Simulate an async API call to fetch a single application by ID
 async function fetchApplicationById(appId: string): Promise<ApplicationInput> {
+	console.log("Fetching application by ID:", appId);
 	// Simulate network delay
 	await new Promise(resolve => setTimeout(resolve, 500));
 
