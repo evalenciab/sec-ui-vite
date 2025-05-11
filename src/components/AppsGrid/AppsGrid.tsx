@@ -4,6 +4,9 @@ import { z } from "zod";
 import { maintainAppsSchema } from "../../schemas/maintain_apps";
 import { UseMutationResult } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
+import { ManageAccounts, SupervisorAccount, VerifiedUser } from "@mui/icons-material";
+import { AppCard } from "../AppCard";
+import { RequestUserForm } from "../RequestUserForm";
 
 interface AppsGridProps {
 	allApplications: z.input<typeof maintainAppsSchema>[];
@@ -20,6 +23,8 @@ export function AppsGrid({ allApplications, deleteApplicationMutation }: AppsGri
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const [appIdToDelete, setAppIdToDelete] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState('');
+	const [openRequestAccessDialog, setOpenRequestAccessDialog] = useState(false);
+	const [appIdToRequestAccess, setAppIdToRequestAccess] = useState<string | null>(null);
 
 	const handleOpenDeleteDialog = (appId: string) => {
 		setAppIdToDelete(appId);
@@ -43,6 +48,23 @@ export function AppsGrid({ allApplications, deleteApplicationMutation }: AppsGri
 			});
 		}
 	};
+
+	const handleOpenRequestAccessDialog = (appId: string) => {
+		setAppIdToRequestAccess(appId);
+		setOpenRequestAccessDialog(true);
+	};
+
+	const handleCloseRequestAccessDialog = () => {
+		setAppIdToRequestAccess(null);
+		setOpenRequestAccessDialog(false);
+	};
+
+	const handleRequestAccessConfirm = () => {
+		if (appIdToRequestAccess) {
+			//requestAccessMutation.mutate(appIdToRequestAccess);
+		}
+	};
+
 
 	const filteredApplications = useMemo(() => {
 		if (!searchQuery) {
@@ -79,47 +101,13 @@ export function AppsGrid({ allApplications, deleteApplicationMutation }: AppsGri
 				</Grid>
 			</Grid>
 			{filteredApplications.map((app) => (
-				<Grid size={{ xs: 12, sm: 6, md: 4 }} key={app.appId || app.appName}>
-					<Card sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
-						<CardContent>
-							<Typography variant="h6" component="div">
-								{app.appName}
-							</Typography>
-							<Typography sx={{ mb: 1.5 }} color="text.secondary">
-								ID: {app.appId}
-							</Typography>
-							<Typography variant="body2" sx={{ mb: 1, flexGrow: 1 }}>
-								{app.appDescription}
-							</Typography>
-							<Typography variant="body2" color="text.secondary">
-								Total Roles: {app.roles?.length || 0}
-							</Typography>
-						</CardContent>
-						<CardActions sx={{ justifyContent: "flex-end" }}>
-							<Button
-								size="small"
-								variant="outlined"
-								color="error"
-								disabled={deleteApplicationMutation.isPending}
-								onClick={() => {
-									if (app.appId) {
-										handleOpenDeleteDialog(app.appId);
-									}
-								}}
-							>
-								Delete
-							</Button>
-							<Button
-								size="small"
-								variant="contained"
-								onClick={() => navigate(`/app-details/${app.appId}`)}
-								disabled={deleteApplicationMutation.isPending}
-							>
-								View Details
-							</Button>
-						</CardActions>
-					</Card>
-				</Grid>
+				<AppCard 
+					key={app.appId} 
+					app={app} 
+					deleteApplicationMutation={deleteApplicationMutation} 
+					handleOpenDeleteDialog={handleOpenDeleteDialog} 
+					handleOpenRequestAccessDialog={handleOpenRequestAccessDialog}
+				/>
 			))}
 			<Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
 				<DialogTitle>Delete Application</DialogTitle>
@@ -142,6 +130,12 @@ export function AppsGrid({ allApplications, deleteApplicationMutation }: AppsGri
 					</Button>
 				</DialogActions>
 			</Dialog>
+			<RequestUserForm
+				appId={appIdToRequestAccess}
+				userId={'EVALENCIA'}
+				openRequestAccessDialog={openRequestAccessDialog}
+				handleCloseRequestAccessDialog={handleCloseRequestAccessDialog}
+			/>
 		</Grid>
 	);
 } 
