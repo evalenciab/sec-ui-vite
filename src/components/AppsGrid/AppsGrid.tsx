@@ -1,9 +1,9 @@
-import { Grid, Card, CardContent, Typography, CardActions, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress, Box } from "@mui/material";
+import { Grid, Card, CardContent, Typography, CardActions, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress, Box, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { maintainAppsSchema } from "../../schemas/maintain_apps";
 import { UseMutationResult } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface AppsGridProps {
 	allApplications: z.input<typeof maintainAppsSchema>[];
@@ -19,6 +19,7 @@ export function AppsGrid({ allApplications, deleteApplicationMutation }: AppsGri
 	const navigate = useNavigate();
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const [appIdToDelete, setAppIdToDelete] = useState<string | null>(null);
+	const [searchQuery, setSearchQuery] = useState('');
 
 	const handleOpenDeleteDialog = (appId: string) => {
 		setAppIdToDelete(appId);
@@ -43,6 +44,18 @@ export function AppsGrid({ allApplications, deleteApplicationMutation }: AppsGri
 		}
 	};
 
+	const filteredApplications = useMemo(() => {
+		if (!searchQuery) {
+			return allApplications;
+		}
+		const lowercasedQuery = searchQuery.toLowerCase();
+		return allApplications.filter(app => 
+			(app.appName?.toLowerCase().includes(lowercasedQuery)) ||
+			(app.appId?.toLowerCase().includes(lowercasedQuery)) ||
+			(app.appDescription?.toLowerCase().includes(lowercasedQuery))
+		);
+	}, [allApplications, searchQuery]);
+
 	if (!allApplications || allApplications.length === 0) {
 		return (
 			<Typography variant="h6" sx={{ textAlign: "center", mt: 4 }}>
@@ -53,7 +66,19 @@ export function AppsGrid({ allApplications, deleteApplicationMutation }: AppsGri
 
 	return (
 		<Grid container spacing={2}>
-			{allApplications.map((app) => (
+			<Grid container size={{ xs: 12 }}>
+				<Grid size={{ xs: 12, md: 4 }}>
+					<TextField
+						label="Search by App Name, ID, or Description"
+						variant="outlined"
+						fullWidth
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						size="small"
+					/>
+				</Grid>
+			</Grid>
+			{filteredApplications.map((app) => (
 				<Grid size={{ xs: 12, sm: 6, md: 4 }} key={app.appId || app.appName}>
 					<Card sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
 						<CardContent>
